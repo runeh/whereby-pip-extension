@@ -3,6 +3,8 @@ let canvasEle;
 let outVideo;
 let ctx;
 
+let stream;
+
 const videoElements = document.getElementsByTagName('video');
 
 function setup() {
@@ -22,22 +24,26 @@ function setup() {
   canvasEle.style.left = '0';
   canvasEle.style.border = 'solid thick bold';
 
-  document.body.appendChild(canvasEle);
+  // document.body.appendChild(canvasEle);
 
   outVideo = document.createElement('video');
-  const stream = canvasEle.captureStream();
 
-  outVideo.srcObject = stream;
-  document.body.appendChild(outVideo);
-
-  outVideo.style.width = '320px';
-  outVideo.style.height = '240px';
+  // outVideo.style.width = '320px';
+  // outVideo.style.height = '240px';
   outVideo.style.position = 'fixed';
   outVideo.style.top = '0';
   outVideo.style.right = '0';
-  outVideo.style.border = 'solid thick red';
+  outVideo.style.border = 'solid thick gold';
+  outVideo.muted = true;
+  outVideo.autoplay = true;
+  outVideo.width = 240;
+  outVideo.height = 160;
 
   document.body.appendChild(outVideo);
+
+  stream = canvasEle.captureStream();
+  outVideo.srcObject = stream;
+
   hasBooted = true;
 }
 
@@ -55,7 +61,7 @@ function ticker() {
     ctx.drawImage(video, 0, index * 20, 120, 80);
   });
 
-  if (frameGuard++ < 300) {
+  if (frameGuard++ < 3000) {
     setTimeout(ticker, 33);
   } else {
     //           outVideo.remove()
