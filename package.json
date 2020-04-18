@@ -4,7 +4,12 @@
   "main": "index.js",
   "author": "Rune Finstad Halvorsen",
   "license": "MIT",
+  "scripts": {
+    "dev": "parcel ./src/manifest.json",
+    "build": "parcel build ./src/manifest.json"
+  },
   "devDependencies": {
-    "parcel-bundler": "^1.12.4"
+    "parcel-bundler": "^1.12.4",
+    "parcel-plugin-web-extension": "^1.6.1"
   }
 }
