@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+
+  "name": "Whereby pictuire-in-picture",
+  "description": "Merges pip things",
+  "version": "1.0",
+ 
+  "permissions": [
+  ],
+
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["./main.js"]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "whereby-pip-extension",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Rune Finstad Halvorsen",
+  "license": "MIT",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4"
+  }
+}
