@@ -4,14 +4,13 @@
   "name": "Whereby pictuire-in-picture",
   "description": "Merges pip things",
   "version": "1.0",
- 
-  "permissions": [
-  ],
+
+  "permissions": [],
 
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*"],
-      "js": ["./main.js"]
+      "matches": ["https://*.whereby.com/*"],
+      "js": ["./injected.js"]
     }
   ]
 }
