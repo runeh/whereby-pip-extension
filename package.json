@@ -5,7 +5,7 @@
   "author": "Rune Finstad Halvorsen",
   "license": "MIT",
   "scripts": {
-    "dev": "parcel ./src/manifest.json",
+    "dev": "parcel watch --no-hmr ./src/manifest.json",
     "build": "parcel build ./src/manifest.json"
   },
   "devDependencies": {
