@@ -13,14 +13,13 @@ function initMediaPipState(): PipState {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   const pipVideo = document.createElement('video');
+  // 1024×576
+  // 1280x720
+  canvas.width = 640;
+  canvas.height = 360;
 
-  canvas.width = 320;
-  canvas.height = 240;
-
-  pipVideo.style.backgroundColor = 'gray';
   pipVideo.muted = true;
   pipVideo.autoplay = true;
-  //pipVideo.controls = true;
   pipVideo.srcObject = canvas.captureStream();
 
   const sources = document.getElementsByTagName('video');
@@ -35,6 +34,9 @@ function tick(state: PipState) {
     .filter((e) => e.videoWidth);
 
   // fixme: move some of this away
+  // maybe have this be "render" and have other stuff in the
+  // mainloop function
+
   const dims = getLayout(
     {
       containerWidth: canvas.width,
@@ -55,21 +57,12 @@ function tick(state: PipState) {
     return;
   }
 
-  // fixme: here we add the scaling logic thing
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.strokeStyle = '#000000';
   eles.forEach((video, _index) => {
-    //   console.log(
-    //     video.videoWidth,
-    //     video.videoHeight,
-    //     '/',
-    //     _index,
-    //     dims[_index].top,
-    //     dims[_index].left,
-    //     dims[_index].width,
-    //     dims[_index].height,
-    //   );
-
     const { left, top, height, width } = dims[_index];
     context.drawImage(video, left, top, width, height);
+    context.strokeRect(left, top, width, height);
   });
 }
 
@@ -88,34 +81,21 @@ async function mainLoop(state: PipState) {
 
   while (safety-- > 0) {
     tick(state);
-    await sleep(33);
+    await sleep(66);
   }
 }
 
 async function main() {
   await waitForConnectedRoom();
   const state = initMediaPipState();
-  const { pipVideo, canvas } = state;
-
-  // pipVideo.width = 300;
-  // pipVideo.height = 300;
+  const { pipVideo } = state;
 
   if (isDev) {
-    // canvas.style.width = '300';
-    // canvas.style.height = '300px';
-    // canvas.style.border = 'solid thin red';
-    // canvas.style.position = 'fixed';
-    // canvas.style.top = '0';
-    // canvas.style.left = '0';
-    // document.body.appendChild(canvas);
+    pipVideo.style.position = 'fixed';
+    pipVideo.style.top = '0';
+    pipVideo.style.right = '0';
+    pipVideo.style.width = '300px';
   }
-
-  // pipVideo.style.width = '160px';
-  // pipVideo.style.height = '120px';
-  // pipVideo.style.border = 'solid thin red';
-  pipVideo.style.position = 'fixed';
-  pipVideo.style.top = '0';
-  pipVideo.style.right = '0';
 
   document.body.appendChild(pipVideo);
   mainLoop(state);
