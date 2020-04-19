@@ -1,4 +1,4 @@
-import { computeLayout } from './layout';
+import { getLayout } from './layout';
 
 interface PipState {
   canvas: HTMLCanvasElement;
@@ -14,8 +14,8 @@ function initMediaPipState(): PipState {
   const context = canvas.getContext('2d');
   const pipVideo = document.createElement('video');
 
-  canvas.width = 640;
-  canvas.height = 480;
+  canvas.width = 320;
+  canvas.height = 240;
 
   pipVideo.style.backgroundColor = 'gray';
   pipVideo.muted = true;
@@ -29,13 +29,21 @@ function initMediaPipState(): PipState {
 }
 
 function tick(state: PipState) {
-  const { sources, context, pipVideo } = state;
+  const { sources, context, pipVideo, canvas } = state;
   const eles = Array.from(sources).filter((e) => e !== pipVideo);
 
-  // fixme: move this away
-  const dims = computeLayout(
-    { fixedRatio: false, containerWidth: 640, containerHeight: 480 },
-    eles.map((e) => ({ height: e.videoHeight, width: e.videoHeight })),
+  // fixme: move some of this away
+  const dims = getLayout(
+    {
+      containerWidth: canvas.width,
+      containerHeight: canvas.height,
+      fixedRatio: true,
+    },
+    eles.map((e) => ({
+      height: e.videoHeight,
+      width: e.videoWidth,
+      big: false,
+    })),
   );
 
   if (dims.some(Number.isNaN)) {
@@ -51,6 +59,8 @@ function tick(state: PipState) {
       video.videoHeight,
       '/',
       _index,
+      dims[_index].top,
+      dims[_index].left,
       dims[_index].width,
       dims[_index].height,
     );
@@ -74,11 +84,11 @@ async function waitForConnectedRoom() {
 }
 
 async function mainLoop(state: PipState) {
-  let safety = 3;
+  let safety = 3000;
 
   while (safety-- > 0) {
     tick(state);
-    await sleep(10000);
+    await sleep(33);
   }
 }
 
@@ -87,16 +97,16 @@ async function main() {
   const state = initMediaPipState();
   const { pipVideo, canvas } = state;
 
-  // pipVideo.width = 640;
-  // pipVideo.height = 480;
+  // pipVideo.width = 300;
+  // pipVideo.height = 300;
 
   if (isDev) {
-    // canvas.style.width = '160px';
-    // canvas.style.height = '120px';
+    // canvas.style.width = '300';
+    // canvas.style.height = '300px';
     // canvas.style.border = 'solid thin red';
-    canvas.style.position = 'fixed';
-    canvas.style.top = '0';
-    canvas.style.left = '0';
+    // canvas.style.position = 'fixed';
+    // canvas.style.top = '0';
+    // canvas.style.left = '0';
     // document.body.appendChild(canvas);
   }
 

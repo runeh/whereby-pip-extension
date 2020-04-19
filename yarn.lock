@@ -3425,6 +3425,11 @@ onetime@^2.0.0:
   dependencies:
     mimic-fn "^1.0.0"
 
+opentok-layout-js@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/opentok-layout-js/-/opentok-layout-js-3.4.0.tgz#55cc4ec40fcb2c2348738a128996d98d27a37722"
+  integrity sha512-V1Kl1v9HcW1r+qNejAdbawVhtqGu4LMXbRK5UebaVTSbNvJvGXRrwLuLkntxXnf8l2Zp4eXzjSoJ8k0CZu8eWQ==
+
 opn@^5.1.0:
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/opn/-/opn-5.5.0.tgz#fc7164fab56d235904c51c3b27da6758ca3b9bfc"

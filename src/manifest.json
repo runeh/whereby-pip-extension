@@ -10,7 +10,7 @@
   "content_scripts": [
     {
       "matches": ["https://*.whereby.com/*"],
-      "js": ["./injected.js", "./content-script.ts"]
+      "js": ["./content-script.ts"]
     }
   ]
 }
