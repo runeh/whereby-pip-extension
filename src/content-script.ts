@@ -20,7 +20,7 @@ function initMediaPipState(): PipState {
   pipVideo.style.backgroundColor = 'gray';
   pipVideo.muted = true;
   pipVideo.autoplay = true;
-  pipVideo.controls = true;
+  //pipVideo.controls = true;
   pipVideo.srcObject = canvas.captureStream();
 
   const sources = document.getElementsByTagName('video');
@@ -30,7 +30,9 @@ function initMediaPipState(): PipState {
 
 function tick(state: PipState) {
   const { sources, context, pipVideo, canvas } = state;
-  const eles = Array.from(sources).filter((e) => e !== pipVideo);
+  const eles = Array.from(sources)
+    .filter((e) => e !== pipVideo)
+    .filter((e) => e.videoWidth);
 
   // fixme: move some of this away
   const dims = getLayout(
@@ -39,37 +41,35 @@ function tick(state: PipState) {
       containerHeight: canvas.height,
       fixedRatio: true,
     },
-    eles.map((e) => ({
-      height: e.videoHeight,
-      width: e.videoWidth,
-      big: false,
-    })),
+    eles.map((e) => {
+      return {
+        height: e.videoHeight,
+        width: e.videoWidth,
+        big: false,
+      };
+    }),
   );
 
+  // console.log(JSON.stringify(dims, null, 2));
   if (dims.some(Number.isNaN)) {
     return;
   }
 
-  // console.log(dims);
-
   // fixme: here we add the scaling logic thing
   eles.forEach((video, _index) => {
-    console.log(
-      video.videoWidth,
-      video.videoHeight,
-      '/',
-      _index,
-      dims[_index].top,
-      dims[_index].left,
-      dims[_index].width,
-      dims[_index].height,
-    );
+    //   console.log(
+    //     video.videoWidth,
+    //     video.videoHeight,
+    //     '/',
+    //     _index,
+    //     dims[_index].top,
+    //     dims[_index].left,
+    //     dims[_index].width,
+    //     dims[_index].height,
+    //   );
 
     const { left, top, height, width } = dims[_index];
-    // console.log(dims[_index]);
-    // console.log('drawing');
     context.drawImage(video, left, top, width, height);
-    // context.drawImage(video, 0, 0, 640, 480);
   });
 }
 
