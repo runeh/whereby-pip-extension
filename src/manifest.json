@@ -5,7 +5,18 @@
   "description": "Show Whereby rooms in picture-in-picture",
   "version": "1.0",
 
-  "permissions": [],
+  "permissions": [
+    "activeTab",
+    "alarms",
+    "bookmarks",
+    "declarativeContent",
+    "tabs"
+  ],
+
+  "background": {
+    "scripts": ["background.ts"],
+    "persistent": true
+  },
 
   "page_action": {
     "default_title": "PiP it to the max",

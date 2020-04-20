@@ -9,6 +9,12 @@ interface PipState {
 
 const isDev = process.env.NODE_ENV === 'development';
 
+chrome.runtime.onMessage.addListener((message) => {
+  console.log('got a message in content script', message);
+});
+
+chrome.runtime.sendMessage({ greeting: 'hello' });
+
 function initMediaPipState(): PipState {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
