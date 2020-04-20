@@ -5,13 +5,7 @@
   "description": "Show Whereby rooms in picture-in-picture",
   "version": "1.0",
 
-  "permissions": [
-    "activeTab",
-    "alarms",
-    "bookmarks",
-    "declarativeContent",
-    "tabs"
-  ],
+  "permissions": ["activeTab", "declarativeContent"],
 
   "background": {
     "scripts": ["background.ts"],
