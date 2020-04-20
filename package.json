@@ -9,6 +9,7 @@
     "build": "parcel build ./src/manifest.json"
   },
   "devDependencies": {
+    "@types/chrome": "^0.0.104",
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-web-extension": "^1.6.1",
     "typescript": "^3.8.3"
