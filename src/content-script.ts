@@ -9,11 +9,8 @@ interface PipState {
 
 const isDev = process.env.NODE_ENV === 'development';
 
-chrome.runtime.onMessage.addListener((message) => {
-  console.log('got a message in content script', message);
-});
-
-chrome.runtime.sendMessage({ greeting: 'hello' });
+let showPip = false;
+let initialized = false;
 
 function initMediaPipState(): PipState {
   const canvas = document.createElement('canvas');
@@ -91,7 +88,7 @@ async function mainLoop(state: PipState) {
   }
 }
 
-async function main() {
+async function initExtension() {
   await waitForConnectedRoom();
   const state = initMediaPipState();
   const { pipVideo } = state;
@@ -100,11 +97,40 @@ async function main() {
     pipVideo.style.position = 'fixed';
     pipVideo.style.top = '0';
     pipVideo.style.right = '0';
-    pipVideo.style.width = '300px';
+    pipVideo.style.width = '40px';
   }
-
+  pipVideo.style.visibility = 'hidden';
   document.body.appendChild(pipVideo);
-  mainLoop(state);
+  return state;
 }
 
-main();
+let currentState: PipState | undefined;
+
+async function main() {
+  showPip = !showPip;
+
+  if (showPip) {
+    currentState = await initExtension();
+    // @ts-ignore
+
+    tick(currentState);
+    setTimeout(async () => {
+      const res = await currentState.pipVideo.requestPictureInPicture();
+      console.log('pipres', res);
+    }, 3000);
+    mainLoop(currentState);
+  } else if (currentState === undefined) {
+    // fixme: remove current state
+  } else {
+    currentState.pipVideo.remove();
+    currentState.pipVideo.srcObject = undefined;
+    currentState = undefined;
+  }
+}
+
+chrome.runtime.onMessage.addListener((message) => {
+  console.log('got a message in content script1234', message);
+  main();
+});
+
+chrome.runtime.sendMessage({ greeting: 'hello' });
