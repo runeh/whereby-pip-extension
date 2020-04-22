@@ -18,8 +18,9 @@ function initMediaPipState(): PipState {
   const pipVideo = document.createElement('video');
   // 1024×576
   // 1280x720
-  canvas.width = 640;
-  canvas.height = 360;
+  // 640x 360
+  canvas.width = 1024;
+  canvas.height = 800;
 
   pipVideo.muted = true;
   pipVideo.autoplay = true;
@@ -80,11 +81,9 @@ async function waitForConnectedRoom() {
 }
 
 async function mainLoop(state: PipState) {
-  let safety = 3000;
-
-  while (safety-- > 0) {
+  while (showPip) {
     tick(state);
-    await sleep(66);
+    await sleep(33);
   }
 }
 
