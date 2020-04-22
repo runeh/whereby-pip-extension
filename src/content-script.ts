@@ -7,6 +7,7 @@ interface PipState {
   sources: HTMLCollectionOf<HTMLVideoElement>;
 }
 
+// @ts-ignore
 const isDev = process.env.NODE_ENV === 'development';
 
 let showPip = false;
@@ -27,6 +28,15 @@ function initMediaPipState(): PipState {
 
   const sources = document.getElementsByTagName('video');
   return { canvas, context, pipVideo, sources };
+}
+
+function isBig(element: HTMLElement): boolean {
+  // data-clientid="local-screenshare"
+  return element.dataset.clientid === 'local-screenshare';
+}
+
+function isMirrored(element: HTMLElement): boolean {
+  return element.className.includes('mirror-');
 }
 
 function tick(state: PipState) {
