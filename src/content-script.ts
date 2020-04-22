@@ -82,6 +82,7 @@ async function waitForConnectedRoom() {
 
 async function mainLoop(state: PipState) {
   while (showPip) {
+    console.log('vidstate3', currentState.pipVideo.readyState);
     tick(state);
     await sleep(33);
   }
@@ -103,6 +104,15 @@ async function initExtension() {
   return state;
 }
 
+async function videoReady(state: PipState) {
+  while (true) {
+    if (state.pipVideo.readyState === state.pipVideo.HAVE_ENOUGH_DATA) {
+      return;
+    }
+    await sleep(33);
+  }
+}
+
 let currentState: PipState | undefined;
 
 async function main() {
@@ -110,17 +120,13 @@ async function main() {
 
   if (showPip) {
     currentState = await initExtension();
-    // @ts-ignore
+    console.log('vidstate1', currentState.pipVideo.readyState);
 
-    tick(currentState);
-    setTimeout(async () => {
-      const res = await currentState.pipVideo.requestPictureInPicture();
-      console.log('pipres', res);
-    }, 3000);
-    mainLoop(currentState);
-  } else if (currentState === undefined) {
-    // fixme: remove current state
-  } else {
+    await tick(currentState);
+    await videoReady(currentState);
+    await currentState.pipVideo.requestPictureInPicture();
+    await mainLoop(currentState);
+    await document.exitPictureInPicture();
     currentState.pipVideo.remove();
     currentState.pipVideo.srcObject = undefined;
     currentState = undefined;
