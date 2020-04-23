@@ -105,7 +105,7 @@ async function waitForConnectedRoom() {
 }
 
 async function mainLoop(state: PipState, opts: Options) {
-  const frameDelay = Math.ceil(opts.frameRate / 1000);
+  const frameDelay = Math.ceil(1000 / opts.frameRate);
   while (showPip) {
     tick(state, opts);
     await sleep(frameDelay);
