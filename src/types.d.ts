@@ -1,3 +1,5 @@
+// Stuff missing from the types
+
 interface HTMLCanvasElement {
   captureStream(): MediaStream;
 }

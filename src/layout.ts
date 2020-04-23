@@ -12,7 +12,17 @@ interface LayoutOpts {
   containerHeight: number;
 }
 
-export function getLayout(opts: LayoutOpts, boxes: readonly InputBox[]) {
+export interface LayoutBox {
+  left: number;
+  top: number;
+  height: number;
+  width: number;
+}
+
+export function getLayout(
+  opts: LayoutOpts,
+  boxes: readonly InputBox[],
+): readonly LayoutBox[] {
   const layoutManger = initLayoutContainer(null, opts);
   return layoutManger.getLayout(boxes);
 }

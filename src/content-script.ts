@@ -1,16 +1,71 @@
-import { getLayout } from './layout';
+import { getLayout, LayoutBox } from './layout';
 
 interface PipState {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
   pipVideo: HTMLVideoElement;
-  sources: HTMLCollectionOf<HTMLVideoElement>;
+  videoContainers: HTMLCollectionOf<HTMLElement>;
+}
+
+interface Displayable {
+  videoEle: HTMLVideoElement;
+  layout: LayoutBox;
+  name: string;
+  muted: boolean;
 }
 
 // @ts-ignore
 const isDev = process.env.NODE_ENV === 'development';
 
 let showPip = false;
+
+function pairs<T1, T2>(
+  firstList: readonly T1[],
+  secondList: readonly T2[],
+): [T1, T2][] {
+  if (firstList.length !== secondList.length) {
+    throw new Error('Arrays must be same size');
+  }
+
+  return firstList.map((e, n) => [e, secondList[n]]);
+}
+
+/**
+ * fixme: this can be cleaned up probs.
+ * @param state
+ */
+function getDisplayables(outputSize: {
+  width: number;
+  height: number;
+}): readonly Displayable[] {
+  const { height, width } = outputSize;
+  const eles = Array.from(
+    document.querySelectorAll('.jstest-client-video'),
+  ) as HTMLElement[];
+
+  const guests = Array.from(eles).map((item) => {
+    const video = item.querySelector('video');
+    const name = item.querySelector('[class|=nameBanner]').textContent;
+    return {
+      height: video.videoHeight,
+      width: video.videoWidth,
+      big: isBig(item),
+      name,
+      video,
+    };
+  });
+
+  const layouts = getLayout(
+    { containerHeight: height, containerWidth: width, fixedRatio: true },
+    guests,
+  );
+
+  return pairs(guests, layouts)
+    .sort((a, b) => a[0].name.localeCompare(b[0].name))
+    .map<Displayable>(([guest, layout]) => {
+      return { layout, videoEle: guest.video, name: guest.name, muted: false };
+    });
+}
 
 function initMediaPipState(): PipState {
   const canvas = document.createElement('canvas');
@@ -27,11 +82,10 @@ function initMediaPipState(): PipState {
   pipVideo.srcObject = canvas.captureStream();
 
   const sources = document.getElementsByTagName('video');
-  return { canvas, context, pipVideo, sources };
+  return { canvas, context, pipVideo, videoContainers: sources };
 }
 
 function isBig(element: HTMLElement): boolean {
-  // data-clientid="local-screenshare"
   return element.dataset.clientid === 'local-screenshare';
 }
 
@@ -39,40 +93,58 @@ function isMirrored(element: HTMLElement): boolean {
   return element.className.includes('mirror-');
 }
 
+function getGuestsId(eles: readonly HTMLElement[]): string {
+  return eles
+    .map((e) => e.dataset.clientid)
+    .sort()
+    .join();
+}
+
 function tick(state: PipState) {
-  const { sources, context, pipVideo, canvas } = state;
-  const eles = Array.from(sources)
-    .filter((e) => e !== pipVideo)
-    .filter((e) => e.videoWidth);
+  const { context, pipVideo, canvas } = state;
 
-  // fixme: move some of this away
-  // maybe have this be "render" and have other stuff in the
-  // mainloop function
+  // should trigger outside of the tick.
+  // maybe rename "tick" to "render"
+  const displayables = getDisplayables({
+    width: canvas.width,
+    height: canvas.height,
+  });
 
-  const dims = getLayout(
-    {
-      containerWidth: canvas.width,
-      containerHeight: canvas.height,
-      fixedRatio: true,
-    },
-    eles.map((e) => {
-      return {
-        height: e.videoHeight,
-        width: e.videoWidth,
-        big: false,
-      };
-    }),
-  );
+  // // const eles = Array.from(sources)
+  // //   .filter((e) => e !== pipVideo)
+  // //   .filter((e) => e.videoWidth);
 
-  if (dims.some(Number.isNaN)) {
-    return;
-  }
+  // // fixme: move some of this away
+  // // maybe have this be "render" and have other stuff in the
+  // // mainloop function
+
+  // const dims = getLayout(
+  //   {
+  //     containerWidth: canvas.width,
+  //     containerHeight: canvas.height,
+  //     fixedRatio: true,
+  //   },
+  //   eles.map((e) => {
+  //     return {
+  //       height: e.videoHeight,
+  //       width: e.videoWidth,
+  //       big: false,
+  //     };
+  //   }),
+  // );
+
+  // if (dims.some(Number.isNaN)) {
+  //   return;
+  // }
+
+  // fixme: do we need to check for nan?
 
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.strokeStyle = '#000000';
-  eles.forEach((video, index) => {
-    const { left, top, height, width } = dims[index];
-    context.drawImage(video, left, top, width, height);
+
+  displayables.forEach((e) => {
+    const { left, top, height, width } = e.layout;
+    context.drawImage(e.videoEle, left, top, width, height);
     context.strokeRect(left, top, width, height);
   });
 }
