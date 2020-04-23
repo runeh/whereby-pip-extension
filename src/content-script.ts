@@ -1,5 +1,5 @@
 import { getLayout, LayoutBox } from './layout';
-import { Displayable, PipState } from './types';
+import { Displayable, PipState, Options } from './types';
 
 // @ts-ignore
 const isDev = process.env.NODE_ENV === 'development';
@@ -21,18 +21,19 @@ function pairs<T1, T2>(
  * fixme: this can be cleaned up probs.
  * @param state
  */
-function getDisplayables(outputSize: {
-  width: number;
-  height: number;
-}): readonly Displayable[] {
-  const { height, width } = outputSize;
+function getDisplayables(opts: Options): readonly Displayable[] {
+  const { height, width } = opts.videoResolution;
 
   const eles = Array.from(
     document.querySelectorAll('.jstest-client-video'),
   ) as HTMLElement[];
 
   const layouts = getLayout(
-    { containerHeight: height, containerWidth: width, fixedRatio: true },
+    {
+      containerHeight: height,
+      containerWidth: width,
+      fixedRatio: opts.keepAspectRatio,
+    },
     eles.map((e) => {
       const { videoHeight, videoWidth } = e.querySelector('video');
       return { height: videoHeight, width: videoWidth, big: isBig(e) };
@@ -49,15 +50,13 @@ function getDisplayables(outputSize: {
   }));
 }
 
-function initMediaPipState(): PipState {
+function initMediaPipState(opts: Options): PipState {
+  const { height, width } = opts.videoResolution;
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   const pipVideo = document.createElement('video');
-  // 1280x720
-  // 1024×576
-  // 640x 360
-  canvas.width = 1280;
-  canvas.height = 720;
+  canvas.width = width;
+  canvas.height = height;
 
   pipVideo.muted = true;
   pipVideo.autoplay = true;
@@ -75,15 +74,12 @@ function isMuted(element: HTMLElement): boolean {
   return element.querySelector('.jstest-mute-icon') != null;
 }
 
-function tick(state: PipState) {
+function tick(state: PipState, opts: Options) {
   const { context, canvas } = state;
 
   // should trigger outside of the tick.
   // maybe rename "tick" to "render"
-  const displayables = getDisplayables({
-    width: canvas.width,
-    height: canvas.height,
-  });
+  const displayables = getDisplayables(opts);
 
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.strokeStyle = '#000000';
@@ -108,25 +104,19 @@ async function waitForConnectedRoom() {
   }
 }
 
-async function mainLoop(state: PipState) {
+async function mainLoop(state: PipState, opts: Options) {
+  const frameDelay = Math.ceil(opts.frameRate / 1000);
   while (showPip) {
-    tick(state);
-    await sleep(33);
+    tick(state, opts);
+    await sleep(frameDelay);
   }
 }
 
-async function initExtension() {
+async function initExtension(opts: Options) {
   // fixme: remove / move this
   await waitForConnectedRoom();
-  const state = initMediaPipState();
+  const state = initMediaPipState(opts);
   const { pipVideo } = state;
-
-  if (isDev) {
-    pipVideo.style.position = 'fixed';
-    pipVideo.style.top = '0';
-    pipVideo.style.right = '0';
-    pipVideo.style.width = '40px';
-  }
   pipVideo.style.visibility = 'hidden';
   document.body.appendChild(pipVideo);
   return state;
@@ -146,13 +136,29 @@ let currentState: PipState | undefined;
 async function main() {
   showPip = !showPip;
 
-  currentState = currentState || (await initExtension());
+  const opts: Options = {
+    flipSelf: false,
+    frameRate: 3,
+    keepAspectRatio: true,
+    showNames: true,
+    showMuteIndicator: true,
+    showOwnVideo: true,
+    videoResolution: {
+      // 1280x720
+      // 1024×576
+      // 640x 360
+      width: 1280,
+      height: 720,
+    },
+  };
+
+  currentState = currentState || (await initExtension(opts));
 
   if (showPip) {
-    tick(currentState);
+    tick(currentState, opts);
     await videoReady(currentState);
     await currentState.pipVideo.requestPictureInPicture();
-    await mainLoop(currentState);
+    await mainLoop(currentState, opts);
     await document.exitPictureInPicture();
     currentState.pipVideo.remove();
     currentState.pipVideo.srcObject = undefined;
