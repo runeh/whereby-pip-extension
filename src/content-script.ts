@@ -1,20 +1,5 @@
 import { getLayout, LayoutBox } from './layout';
-
-interface PipState {
-  canvas: HTMLCanvasElement;
-  context: CanvasRenderingContext2D;
-  pipVideo: HTMLVideoElement;
-  videoContainers: HTMLCollectionOf<HTMLElement>;
-}
-
-interface Displayable {
-  videoEle: HTMLVideoElement;
-  layout: LayoutBox;
-  name: string;
-  muted: boolean;
-  big: boolean;
-  me: boolean;
-}
+import { Displayable, PipState } from './types';
 
 // @ts-ignore
 const isDev = process.env.NODE_ENV === 'development';
