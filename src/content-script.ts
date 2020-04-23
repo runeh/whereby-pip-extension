@@ -12,6 +12,8 @@ interface Displayable {
   layout: LayoutBox;
   name: string;
   muted: boolean;
+  big: boolean;
+  me: boolean;
 }
 
 // @ts-ignore
@@ -39,32 +41,27 @@ function getDisplayables(outputSize: {
   height: number;
 }): readonly Displayable[] {
   const { height, width } = outputSize;
+
   const eles = Array.from(
     document.querySelectorAll('.jstest-client-video'),
   ) as HTMLElement[];
 
-  const guests = Array.from(eles).map((item) => {
-    const video = item.querySelector('video');
-    const name = item.querySelector('[class|=nameBanner]').textContent;
-    return {
-      height: video.videoHeight,
-      width: video.videoWidth,
-      big: isBig(item),
-      name,
-      video,
-    };
-  });
-
   const layouts = getLayout(
     { containerHeight: height, containerWidth: width, fixedRatio: true },
-    guests,
+    eles.map((e) => {
+      const { videoHeight, videoWidth } = e.querySelector('video');
+      return { height: videoHeight, width: videoWidth, big: isBig(e) };
+    }),
   );
 
-  return pairs(guests, layouts)
-    .sort((a, b) => a[0].name.localeCompare(b[0].name))
-    .map<Displayable>(([guest, layout]) => {
-      return { layout, videoEle: guest.video, name: guest.name, muted: false };
-    });
+  return pairs(eles, layouts).map<Displayable>(([ele, layout]) => ({
+    big: isBig(ele),
+    layout,
+    me: false,
+    muted: false,
+    name: ele.querySelector('[class|=nameBanner]').textContent,
+    videoEle: ele.querySelector('video'),
+  }));
 }
 
 function initMediaPipState(): PipState {
