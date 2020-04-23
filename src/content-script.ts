@@ -55,10 +55,10 @@ function getDisplayables(outputSize: {
   );
 
   return pairs(eles, layouts).map<Displayable>(([ele, layout]) => ({
-    big: isBig(ele),
     layout,
     me: false,
-    muted: false,
+    big: isBig(ele),
+    muted: isMuted(ele),
     name: ele.querySelector('[class|=nameBanner]').textContent,
     videoEle: ele.querySelector('video'),
   }));
@@ -68,11 +68,11 @@ function initMediaPipState(): PipState {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   const pipVideo = document.createElement('video');
-  // 1024×576
   // 1280x720
+  // 1024×576
   // 640x 360
-  canvas.width = 1024;
-  canvas.height = 576;
+  canvas.width = 1280;
+  canvas.height = 720;
 
   pipVideo.muted = true;
   pipVideo.autoplay = true;
@@ -86,19 +86,12 @@ function isBig(element: HTMLElement): boolean {
   return element.dataset.clientid === 'local-screenshare';
 }
 
-function isMirrored(element: HTMLElement): boolean {
-  return element.className.includes('mirror-');
-}
-
-function getGuestsId(eles: readonly HTMLElement[]): string {
-  return eles
-    .map((e) => e.dataset.clientid)
-    .sort()
-    .join();
+function isMuted(element: HTMLElement): boolean {
+  return element.querySelector('.jstest-mute-icon') != null;
 }
 
 function tick(state: PipState) {
-  const { context, pipVideo, canvas } = state;
+  const { context, canvas } = state;
 
   // should trigger outside of the tick.
   // maybe rename "tick" to "render"
@@ -107,41 +100,15 @@ function tick(state: PipState) {
     height: canvas.height,
   });
 
-  // // const eles = Array.from(sources)
-  // //   .filter((e) => e !== pipVideo)
-  // //   .filter((e) => e.videoWidth);
-
-  // // fixme: move some of this away
-  // // maybe have this be "render" and have other stuff in the
-  // // mainloop function
-
-  // const dims = getLayout(
-  //   {
-  //     containerWidth: canvas.width,
-  //     containerHeight: canvas.height,
-  //     fixedRatio: true,
-  //   },
-  //   eles.map((e) => {
-  //     return {
-  //       height: e.videoHeight,
-  //       width: e.videoWidth,
-  //       big: false,
-  //     };
-  //   }),
-  // );
-
-  // if (dims.some(Number.isNaN)) {
-  //   return;
-  // }
-
-  // fixme: do we need to check for nan?
-
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.strokeStyle = '#000000';
 
   displayables.forEach((e) => {
     const { left, top, height, width } = e.layout;
-    context.drawImage(e.videoEle, left, top, width, height);
+    const { muted, videoEle } = e;
+    context.drawImage(videoEle, left, top, width, height);
+    context.lineWidth = muted ? 4 : 1;
+    context.strokeStyle = muted ? '#FF0000' : '#000000';
     context.strokeRect(left, top, width, height);
   });
 }
