@@ -5,6 +5,10 @@
   "description": "Show Whereby rooms in picture-in-picture",
   "version": "1.0",
 
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
   "permissions": ["activeTab", "declarativeContent"],
 
   "background": {
