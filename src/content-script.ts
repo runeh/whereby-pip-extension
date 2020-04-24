@@ -170,4 +170,19 @@ chrome.runtime.onMessage.addListener((message) => {
   main();
 });
 
-chrome.runtime.sendMessage({ greeting: 'hello' });
+// window.setTimeout(() => {
+//   console.log('hello from content script');
+
+//   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+//     console.log(tabs);
+//     // lastTabId = tabs[0].id;
+//     // chrome.pageAction.show(lastTabId);
+//   });
+// }, 5000);
+
+chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+  console.log('booped?');
+  if (changeInfo.url) {
+    chrome.pageAction.show(tabId);
+  }
+});
