@@ -138,7 +138,7 @@ async function main() {
 
   const opts: Options = {
     flipSelf: false,
-    frameRate: 3,
+    frameRate: 33,
     keepAspectRatio: true,
     showNames: true,
     showMuteIndicator: true,
@@ -168,21 +168,4 @@ async function main() {
 
 chrome.runtime.onMessage.addListener((message) => {
   main();
-});
-
-// window.setTimeout(() => {
-//   console.log('hello from content script');
-
-//   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-//     console.log(tabs);
-//     // lastTabId = tabs[0].id;
-//     // chrome.pageAction.show(lastTabId);
-//   });
-// }, 5000);
-
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-  console.log('booped?');
-  if (changeInfo.url) {
-    chrome.pageAction.show(tabId);
-  }
 });

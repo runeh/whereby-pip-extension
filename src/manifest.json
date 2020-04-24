@@ -15,6 +15,13 @@
     "default_title": "PiP it to the max"
   },
 
+  "content_scripts": [
+    {
+      "matches": ["https://*.whereby.com/*"],
+      "js": ["./content-script.ts"]
+    }
+  ],
+
   "icons": {
     "32": "./images/32.png",
     "36": "./images/36.png",
