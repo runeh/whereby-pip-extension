@@ -17,7 +17,7 @@
       }
     </style>
   </head>
-  <body>
+  <body data-controller="options">
     <h1>Here be options</h1>
     <form>
       <ul>
@@ -55,7 +55,7 @@
         </li>
         <li>
           <label>
-            <input name="lock_aspect_ratio" type="checkbox" />
+            <input data-target="options.lockAspectRatio" type="checkbox" />
             Lock aspect ratio
           </label>
           <p>
@@ -78,8 +78,10 @@
         </li>
       </ul>
       <div>
-        <button type="button">save</button>
-        <button type="button">cancel</button>
+        <button type="button" data-action="click->options#onSave">save</button>
+        <button type="button" data-action="click->options#onCancel">
+          cancel
+        </button>
       </div>
     </form>
   </body>
