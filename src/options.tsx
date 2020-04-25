@@ -141,36 +141,37 @@ const App: FunctionComponent = () => {
   return (
     <div>
       <h1>Options</h1>
-      <p>The options are not properly hooked up yet.</p>
 
-      <code>
-        <pre>{JSON.stringify(dirtyOpts, null, 2)}</pre>
-      </code>
-      <hr />
+      <p>Some of the options are not properly hooked up yet.</p>
+
       <BooleanOption
         label="Show mute indicator"
         value={dirtyOpts.showMuteIndicator}
         helpText="Show an indicator on videos that are muted"
         onChange={(showMuteIndicator) => updateOptions({ showMuteIndicator })}
       />
+
       <BooleanOption
         label="Flip own video"
         value={dirtyOpts.flipSelf}
-        helpText="Flip the image of your own video"
+        helpText="Not implemented! Flip the image of your own video"
         onChange={(flipSelf) => updateOptions({ flipSelf })}
       />
+
       <BooleanOption
         label="Preserve aspect ratio"
         value={dirtyOpts.keepAspectRatio}
-        helpText="Preserve the aspect ratio of the videos, or allow them to be cropped to better fit the PiP window"
+        helpText="Not implemented! Preserve the aspect ratio of the videos, or allow them to be cropped to better fit the PiP window"
         onChange={(keepAspectRatio) => updateOptions({ keepAspectRatio })}
       />
+
       <BooleanOption
         label="Show names"
         value={dirtyOpts.showNames}
-        helpText="Show the name of the person underneath their video"
+        helpText="Not implemented! Show the name of the person underneath their video"
         onChange={(showNames) => updateOptions({ showNames })}
       />
+
       <BooleanOption
         label="Show own camera"
         value={dirtyOpts.showOwnVideo}
