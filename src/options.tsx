@@ -6,15 +6,13 @@ if (process.env.NODE_ENV === 'development') {
 
 import { h, render, FunctionComponent } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
-// import { makeStyled, formatRoomName, getRoomImage } from './util';
-// import { loadOptions } from './util';
 import { setPragma, glob } from 'goober';
 import { loadOptions } from './util';
 import { Options, Resolution } from './types';
 
 glob`
   body {
-    background-color: gold;
+    background-color: white;
   }
   
   * {
@@ -113,17 +111,31 @@ const BooleanOption: FunctionComponent<{
 };
 
 const App: FunctionComponent = () => {
-  const [options, setOptions] = useState<Options | undefined>(undefined);
+  const [opts, setOpts] = useState<Options | undefined>(undefined);
+  const [dirtyOpts, setDirtyOpts] = useState<Options | undefined>(undefined);
+
   useEffect(() => {
-    loadOptions().then((e) => setOptions(e));
+    loadOptions().then((e) => {
+      setOpts(e);
+      setDirtyOpts(e);
+    });
   }, []);
 
-  if (options === undefined) {
+  if (opts === undefined || dirtyOpts === undefined) {
     return null;
   }
 
-  const updateOptions = (opts: Partial<Options>) => {
-    setOptions({ ...options, ...opts });
+  const updateOptions = (changed: Partial<Options>) => {
+    setDirtyOpts({ ...dirtyOpts, ...changed });
+  };
+
+  const onSave = () => {
+    // fixme: chrome save stuff here
+    setOpts(dirtyOpts);
+  };
+
+  const onCancel = () => {
+    setDirtyOpts(opts);
   };
 
   return (
@@ -132,57 +144,57 @@ const App: FunctionComponent = () => {
       <p>The options are not properly hooked up yet.</p>
 
       <code>
-        <pre>{JSON.stringify(options, null, 2)}</pre>
+        <pre>{JSON.stringify(dirtyOpts, null, 2)}</pre>
       </code>
       <hr />
       <BooleanOption
         label="Show mute indicator"
-        value={options.showMuteIndicator}
+        value={dirtyOpts.showMuteIndicator}
         helpText="Show an indicator on videos that are muted"
         onChange={(showMuteIndicator) => updateOptions({ showMuteIndicator })}
       />
       <BooleanOption
         label="Flip own video"
-        value={options.flipSelf}
+        value={dirtyOpts.flipSelf}
         helpText="Flip the image of your own video"
         onChange={(flipSelf) => updateOptions({ flipSelf })}
       />
       <BooleanOption
         label="Preserve aspect ratio"
-        value={options.keepAspectRatio}
+        value={dirtyOpts.keepAspectRatio}
         helpText="Preserve the aspect ratio of the videos, or allow them to be cropped to better fit the PiP window"
         onChange={(keepAspectRatio) => updateOptions({ keepAspectRatio })}
       />
       <BooleanOption
         label="Show names"
-        value={options.showNames}
+        value={dirtyOpts.showNames}
         helpText="Show the name of the person underneath their video"
         onChange={(showNames) => updateOptions({ showNames })}
       />
       <BooleanOption
         label="Show own camera"
-        value={options.showOwnVideo}
+        value={dirtyOpts.showOwnVideo}
         helpText="Whether or not to show your own camera in the PiP window"
         onChange={(showOwnVideo) => updateOptions({ showOwnVideo })}
       />
       <FrameRateOption
         label="Frame rate"
-        value={options.frameRate}
+        value={dirtyOpts.frameRate}
         helpText="The desired frame rate of the PiP video"
         onChange={(frameRate) => updateOptions({ frameRate })}
       />
       <ResolutionOption
         label="Resolution"
-        value={options.videoResolution}
+        value={dirtyOpts.videoResolution}
         onChange={(videoResolution) => updateOptions({ videoResolution })}
         helpText="The resolution of the pip video. This affects how sharp the video is, not how big it's shown on your screen"
       />
 
       <div>
-        <button type="button" onClick={() => alert('this does nothing')}>
+        <button type="button" onClick={onSave}>
           Save
         </button>
-        <button type="button" onClick={() => alert('this does nothing')}>
+        <button type="button" onClick={onCancel}>
           cancel
         </button>
       </div>
