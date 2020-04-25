@@ -29,5 +29,10 @@
     "72": "./images/72.png",
     "120": "./images/120.png",
     "144": "./images/144.png"
+  },
+
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
   }
 }

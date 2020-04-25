@@ -1,11 +1,16 @@
 import { LayoutBox } from './layout';
 
+export interface Resolution {
+  width: number;
+  height: number;
+}
+
 export interface Options {
   flipSelf: boolean;
   showMuteIndicator: boolean;
   showNames: boolean;
   showOwnVideo: boolean;
-  videoResolution: { width: number; height: number };
+  videoResolution: Resolution;
   frameRate: number;
   keepAspectRatio: boolean;
 }
