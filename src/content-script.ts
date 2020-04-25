@@ -1,5 +1,6 @@
 import { getLayout, LayoutBox } from './layout';
 import { Displayable, PipState, Options } from './types';
+import { loadOptions } from './util';
 
 // @ts-ignore
 const isDev = process.env.NODE_ENV === 'development';
@@ -24,9 +25,17 @@ function pairs<T1, T2>(
 function getDisplayables(opts: Options): readonly Displayable[] {
   const { height, width } = opts.videoResolution;
 
-  const eles = Array.from(
+  const eles = Array.from<HTMLElement>(
     document.querySelectorAll('.jstest-client-video'),
-  ) as HTMLElement[];
+  ).filter((e) => {
+    const isOwnVideo = e.classList.contains('jstest-local-client-video');
+    if (isOwnVideo) {
+      console.log("is own",, opts.showOwnVideo)
+      return opts.showOwnVideo;
+    } else {
+      return true;
+    }
+  });
 
   const layouts = getLayout(
     {
@@ -134,24 +143,8 @@ async function videoReady(state: PipState) {
 let currentState: PipState | undefined;
 
 async function main() {
+  const opts = await loadOptions()
   showPip = !showPip;
-
-  const opts: Options = {
-    flipSelf: false,
-    frameRate: 33,
-    keepAspectRatio: true,
-    showNames: true,
-    showMuteIndicator: true,
-    showOwnVideo: true,
-    videoResolution: {
-      // 1280x720
-      // 1024×576
-      // 640x 360
-      width: 1280,
-      height: 720,
-    },
-  };
-
   currentState = currentState || (await initExtension(opts));
 
   if (showPip) {

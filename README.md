@@ -8,3 +8,4 @@
 - clean up pipstate
 - move running flag etc into pipstate
 - change output from tsc to something modern
+- show something when no videos
