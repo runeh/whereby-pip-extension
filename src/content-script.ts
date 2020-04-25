@@ -29,12 +29,7 @@ function getDisplayables(opts: Options): readonly Displayable[] {
     document.querySelectorAll('.jstest-client-video'),
   ).filter((e) => {
     const isOwnVideo = e.classList.contains('jstest-local-client-video');
-    if (isOwnVideo) {
-      console.log("is own",, opts.showOwnVideo)
-      return opts.showOwnVideo;
-    } else {
-      return true;
-    }
+    return isOwnVideo ? opts.showOwnVideo : true;
   });
 
   const layouts = getLayout(
@@ -91,14 +86,14 @@ function tick(state: PipState, opts: Options) {
   const displayables = getDisplayables(opts);
 
   context.clearRect(0, 0, canvas.width, canvas.height);
-  context.strokeStyle = '#000000';
 
   displayables.forEach((e) => {
     const { left, top, height, width } = e.layout;
     const { muted, videoEle } = e;
     context.drawImage(videoEle, left, top, width, height);
-    context.lineWidth = muted ? 4 : 1;
-    context.strokeStyle = muted ? '#FF0000' : '#000000';
+    context.lineWidth = opts.showMuteIndicator && muted ? 6 : 1;
+    context.strokeStyle =
+      opts.showMuteIndicator && muted ? '#FF0000' : '#000000';
     context.strokeRect(left, top, width, height);
   });
 }
@@ -143,7 +138,7 @@ async function videoReady(state: PipState) {
 let currentState: PipState | undefined;
 
 async function main() {
-  const opts = await loadOptions()
+  const opts = await loadOptions();
   showPip = !showPip;
   currentState = currentState || (await initExtension(opts));
 
