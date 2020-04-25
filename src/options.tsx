@@ -7,7 +7,7 @@ if (process.env.NODE_ENV === 'development') {
 import { h, render, FunctionComponent } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
 import { setPragma, glob } from 'goober';
-import { loadOptions } from './util';
+import { loadOptions, saveOptions } from './util';
 import { Options, Resolution } from './types';
 
 glob`
@@ -129,8 +129,8 @@ const App: FunctionComponent = () => {
     setDirtyOpts({ ...dirtyOpts, ...changed });
   };
 
-  const onSave = () => {
-    // fixme: chrome save stuff here
+  const onSave = async () => {
+    await saveOptions(dirtyOpts);
     setOpts(dirtyOpts);
   };
 
