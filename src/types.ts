@@ -25,6 +25,7 @@ export interface PipState {
 export interface Displayable {
   videoEle: HTMLVideoElement;
   layout: LayoutBox;
+  source: LayoutBox;
   name: string;
   muted: boolean;
   big: boolean;

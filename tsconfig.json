@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "types": ["jest"],
+
     "esModuleInterop": true,
     "target": "es2017",
     "lib": ["ES2015", "ES2019.Array", "DOM"],

@@ -1,6 +1,6 @@
-import { getLayout, LayoutBox } from './layout';
+import { getLayout } from './layout';
 import { Displayable, PipState, Options } from './types';
-import { loadOptions } from './util';
+import { loadOptions, getSourceLocation } from './util';
 
 // @ts-ignore
 const isDev = process.env.NODE_ENV === 'development';
@@ -44,20 +44,28 @@ function getDisplayables(opts: Options): readonly Displayable[] {
     }),
   );
 
-  return pairs(eles, layouts).map<Displayable>(([ele, layout]) => ({
-    layout,
-    me: ele.classList.contains('jstest-local-client-video'),
-    big: isBig(ele),
-    muted: isMuted(ele),
-    name: ele.querySelector('[class|=nameBanner]').textContent,
-    videoEle: ele.querySelector('video'),
-  }));
+  return pairs(eles, layouts).map<Displayable>(([ele, layout]) => {
+    const videoEle = ele.querySelector('video');
+    if (!videoEle) {
+      throw new Error('blargh'); // fixme: use assertion ts
+    }
+    return {
+      layout,
+      me: ele.classList.contains('jstest-local-client-video'),
+      big: isBig(ele),
+      muted: isMuted(ele),
+      name: ele.querySelector('[class|=nameBanner]')?.textContent,
+      videoEle: ele.querySelector('video'),
+      source: getSourceLocation(videoEle, layout),
+    };
+  });
 }
 
 function initMediaPipState(opts: Options): PipState {
   const { height, width } = opts.videoResolution;
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
+  // fixme: assert on context
   const pipVideo = document.createElement('video');
   canvas.width = width;
   canvas.height = height;
@@ -88,13 +96,24 @@ function tick(state: PipState, opts: Options) {
   context.clearRect(0, 0, canvas.width, canvas.height);
 
   displayables.forEach((e) => {
-    const { left, top, height, width } = e.layout;
-    const { muted, videoEle } = e;
-    context.drawImage(videoEle, left, top, width, height);
+    const { source, layout, muted, videoEle } = e;
+    console.log('source', e.source);
+    console.log('layout', e.layout);
+    context.drawImage(
+      videoEle,
+      source.left,
+      source.top,
+      source.width,
+      source.height,
+      layout.left,
+      layout.top,
+      layout.width,
+      layout.height,
+    );
     context.lineWidth = opts.showMuteIndicator && muted ? 6 : 1;
     context.strokeStyle =
       opts.showMuteIndicator && muted ? '#FF0000' : '#000000';
-    context.strokeRect(left, top, width, height);
+    context.strokeRect(layout.left, layout.top, layout.width, layout.height);
   });
 }
 
@@ -149,7 +168,7 @@ async function main() {
     await mainLoop(currentState, opts);
     await document.exitPictureInPicture();
     currentState.pipVideo.remove();
-    currentState.pipVideo.srcObject = undefined;
+    currentState.pipVideo.srcObject = null;
     currentState = undefined;
   }
 }

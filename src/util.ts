@@ -28,34 +28,34 @@ export function saveOptions(opts: Options): Promise<Options> {
   });
 }
 
-interface SourceLocation {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-export function getSourceLocation(
+export function getSourceCrop(
   video: HTMLVideoElement,
   layout: LayoutBox,
-): SourceLocation {
+): LayoutBox {
   const inputAspectRatio = video.videoWidth / video.videoHeight;
   const outputAspectRatio = layout.width / layout.height;
 
   if (inputAspectRatio === outputAspectRatio) {
-    return { y: 0, x: 0, w: video.videoWidth, h: video.videoHeight };
+    return {
+      top: 0,
+      left: 0,
+      width: video.videoWidth,
+      height: video.videoHeight,
+    };
   } else if (inputAspectRatio > outputAspectRatio) {
-    const y = 0;
-    const h = layout.height;
-    const w = layout.width / inputAspectRatio;
-    const x = layout.width / 2 - w / 2;
-    return { x, y, w, h };
+    const top = 0;
+    const height = layout.height;
+    const width = layout.width / inputAspectRatio;
+    const left = layout.width / 2 - width / 2;
+    return { left, top, width, height };
   } else if (inputAspectRatio < outputAspectRatio) {
-    const x = 0;
-    const w = layout.width;
-    const h = layout.height * inputAspectRatio;
-    const y = layout.height / 2 - h / 2;
-    return { x, y, w, h };
+    const left = 0;
+    const width = layout.width;
+    const height = layout.height * inputAspectRatio;
+    const top = layout.height / 2 - height / 2;
+    return { left, top, width, height };
   }
-  return null as never;
+
+  // fixme, have a helper that returns 'equal', 'greater', 'lesser' and swith?
+  throw new Error('halp');
 }
