@@ -10,4 +10,5 @@ interface HTMLVideoElement {
 
 interface Document {
   exitPictureInPicture(): Promise<void>;
+  pictureInPictureElement?: HTMLVideoElement;
 }
