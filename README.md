@@ -8,3 +8,5 @@
 - show something when no videos
 - when save, apply settings
 - fix toggling
+- recalculate displayables less often
+- use x,y,w,h everywhere
