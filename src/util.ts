@@ -1,4 +1,5 @@
 import { Options } from './types';
+import { LayoutBox } from './layout';
 
 const defaultOptions: Options = {
   flipSelf: false,
@@ -25,4 +26,36 @@ export function saveOptions(opts: Options): Promise<Options> {
       resolve(opts);
     });
   });
+}
+
+interface SourceLocation {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export function getSourceLocation(
+  video: HTMLVideoElement,
+  layout: LayoutBox,
+): SourceLocation {
+  const inputAspectRatio = video.videoWidth / video.videoHeight;
+  const outputAspectRatio = layout.width / layout.height;
+
+  if (inputAspectRatio === outputAspectRatio) {
+    return { y: 0, x: 0, w: video.videoWidth, h: video.videoHeight };
+  } else if (inputAspectRatio > outputAspectRatio) {
+    const y = 0;
+    const h = layout.height;
+    const w = layout.width / inputAspectRatio;
+    const x = layout.width / 2 - w / 2;
+    return { x, y, w, h };
+  } else if (inputAspectRatio < outputAspectRatio) {
+    const x = 0;
+    const w = layout.width;
+    const h = layout.height * inputAspectRatio;
+    const y = layout.height / 2 - h / 2;
+    return { x, y, w, h };
+  }
+  return null as never;
 }
