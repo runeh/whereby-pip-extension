@@ -13,16 +13,15 @@
     "@babel/preset-typescript": "^7.9.0",
     "@types/chrome": "^0.0.104",
     "@types/jest": "^25.2.1",
+    "jest": "^25.4.0",
     "parcel-bundler": "^1.12.4",
     "parcel-plugin-web-extension": "^1.6.1",
     "typescript": "^3.8.3"
   },
   "dependencies": {
     "goober": "^1.7.1",
-    "jest": "^25.4.0",
-    "opentok-layout-js": "^3.4.0",
-    "preact": "^10.4.1",
-    "stimulus": "^1.1.1"
+    "opentok-layout-js": "^3.5.0",
+    "preact": "^10.4.1"
   },
   "browserslist": [
     "last 2 Chrome versions"
