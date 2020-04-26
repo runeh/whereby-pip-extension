@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["jest"],
+    "types": ["jest", "chrome"],
 
     "esModuleInterop": true,
     "target": "es2017",

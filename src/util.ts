@@ -28,34 +28,45 @@ export function saveOptions(opts: Options): Promise<Options> {
   });
 }
 
-export function getSourceCrop(
-  video: HTMLVideoElement,
-  layout: LayoutBox,
-): LayoutBox {
-  const inputAspectRatio = video.videoWidth / video.videoHeight;
-  const outputAspectRatio = layout.width / layout.height;
+// interface Coordinate {
+//   x: number;
+//   y: number;
+// }
+
+interface Size {
+  w: number;
+  h: number;
+}
+
+interface Crop {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export function getSourceCrop(source: Size, destination: Size): Crop {
+  const inputAspectRatio = source.w / source.h;
+  const outputAspectRatio = destination.w / destination.h;
 
   if (inputAspectRatio === outputAspectRatio) {
-    return {
-      top: 0,
-      left: 0,
-      width: video.videoWidth,
-      height: video.videoHeight,
-    };
+    return { x: 0, y: 0, w: source.w, h: source.h };
   } else if (inputAspectRatio > outputAspectRatio) {
-    const top = 0;
-    const height = layout.height;
-    const width = layout.width / inputAspectRatio;
-    const left = layout.width / 2 - width / 2;
-    return { left, top, width, height };
+    const y = 0;
+    const h = source.h;
+    const w = h * outputAspectRatio;
+    const x = source.w * 0.5 - w * 0.5;
+    return { x, y, w, h };
   } else if (inputAspectRatio < outputAspectRatio) {
-    const left = 0;
-    const width = layout.width;
-    const height = layout.height * inputAspectRatio;
-    const top = layout.height / 2 - height / 2;
-    return { left, top, width, height };
+    const x = 0;
+    const w = source.w;
+    const h = w * outputAspectRatio;
+    const y = source.h * 0.5 - h * 0.5;
+    return { x, y, w, h };
   }
 
   // fixme, have a helper that returns 'equal', 'greater', 'lesser' and swith?
+  console.log(source, destination);
+  console.log(inputAspectRatio, outputAspectRatio);
   throw new Error('halp');
 }

@@ -1,11 +1,23 @@
-import { getLayout } from './layout';
+import { getLayout, LayoutBox } from './layout';
 import { Displayable, PipState, Options } from './types';
-import { loadOptions, getSourceLocation } from './util';
+import { loadOptions, getSourceCrop } from './util';
 
 // @ts-ignore
 const isDev = process.env.NODE_ENV === 'development';
 
 let showPip = false;
+
+function getSourceLocation(
+  videoEle: HTMLVideoElement,
+  layout: LayoutBox,
+): LayoutBox {
+  const ret = getSourceCrop(
+    { w: videoEle.videoWidth, h: videoEle.videoHeight },
+    { w: layout.width, h: layout.height },
+  );
+
+  return { height: ret.h, width: ret.w, left: ret.x, top: ret.y };
+}
 
 function pairs<T1, T2>(
   firstList: readonly T1[],
@@ -27,10 +39,15 @@ function getDisplayables(opts: Options): readonly Displayable[] {
 
   const eles = Array.from<HTMLElement>(
     document.querySelectorAll('.jstest-client-video'),
-  ).filter((e) => {
-    const isOwnVideo = e.classList.contains('jstest-local-client-video');
-    return isOwnVideo ? opts.showOwnVideo : true;
-  });
+  )
+    .filter((e) => {
+      const isOwnVideo = e.classList.contains('jstest-local-client-video');
+      return isOwnVideo ? opts.showOwnVideo : true;
+    })
+    .filter((e) => {
+      const video = e.querySelector('video');
+      return video?.videoWidth && video?.videoHeight;
+    });
 
   const layouts = getLayout(
     {
@@ -97,8 +114,6 @@ function tick(state: PipState, opts: Options) {
 
   displayables.forEach((e) => {
     const { source, layout, muted, videoEle } = e;
-    console.log('source', e.source);
-    console.log('layout', e.layout);
     context.drawImage(
       videoEle,
       source.left,
@@ -110,7 +125,7 @@ function tick(state: PipState, opts: Options) {
       layout.width,
       layout.height,
     );
-    context.lineWidth = opts.showMuteIndicator && muted ? 6 : 1;
+    context.lineWidth = opts.showMuteIndicator && muted ? 4 : 1;
     context.strokeStyle =
       opts.showMuteIndicator && muted ? '#FF0000' : '#000000';
     context.strokeRect(layout.left, layout.top, layout.width, layout.height);
@@ -119,12 +134,6 @@ function tick(state: PipState, opts: Options) {
 
 function sleep(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
-async function waitForConnectedRoom() {
-  while (document.querySelector('[class|=ConnectedRoom]') == null) {
-    await sleep(200);
-  }
 }
 
 async function mainLoop(state: PipState, opts: Options) {
@@ -136,8 +145,6 @@ async function mainLoop(state: PipState, opts: Options) {
 }
 
 async function initExtension(opts: Options) {
-  // fixme: remove / move this
-  await waitForConnectedRoom();
   const state = initMediaPipState(opts);
   const { pipVideo } = state;
   pipVideo.style.visibility = 'hidden';
@@ -173,6 +180,6 @@ async function main() {
   }
 }
 
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener((_message) => {
   main();
 });

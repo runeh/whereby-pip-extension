@@ -10,6 +10,7 @@ interface LayoutOpts {
   fixedRatio: boolean;
   containerWidth: number;
   containerHeight: number;
+  bigFixedRatio: boolean;
 }
 
 export interface LayoutBox {
