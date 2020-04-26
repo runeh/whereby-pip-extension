@@ -46,7 +46,7 @@ function getDisplayables(opts: Options): readonly Displayable[] {
 
   return pairs(eles, layouts).map<Displayable>(([ele, layout]) => ({
     layout,
-    me: false,
+    me: ele.classList.contains('jstest-local-client-video'),
     big: isBig(ele),
     muted: isMuted(ele),
     name: ele.querySelector('[class|=nameBanner]').textContent,
