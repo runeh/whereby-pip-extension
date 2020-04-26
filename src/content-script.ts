@@ -7,6 +7,17 @@ const isDev = process.env.NODE_ENV === 'development';
 
 let showPip = false;
 
+function assertIsDefined<T>(val: T): asserts val is NonNullable<T> {
+  if (val === undefined || val === null) {
+    throw new Error(`Expected 'val' to be defined, but received ${val}`);
+  }
+}
+function getVideo(ele: HTMLElement): HTMLVideoElement {
+  const video = ele.querySelector('video');
+  assertIsDefined(video);
+  return video;
+}
+
 function getSourceLocation(
   videoEle: HTMLVideoElement,
   layout: LayoutBox,
@@ -54,15 +65,18 @@ function getDisplayables(opts: Options): readonly Displayable[] {
       containerHeight: height,
       containerWidth: width,
       fixedRatio: opts.keepAspectRatio,
+      // fixme:
+      bigFixedRatio: true,
     },
     eles.map((e) => {
-      const { videoHeight, videoWidth } = e.querySelector('video');
+      const { videoHeight, videoWidth } = getVideo(e);
       return { height: videoHeight, width: videoWidth, big: isBig(e) };
     }),
   );
 
-  return pairs(eles, layouts).map<Displayable>(([ele, layout]) => {
-    const videoEle = ele.querySelector('video');
+  return pairs(eles, layouts).map<Displayable>((pair) => {
+    const [ele, layout] = pair;
+    const videoEle = getVideo(ele);
     if (!videoEle) {
       throw new Error('blargh'); // fixme: use assertion ts
     }
@@ -71,8 +85,8 @@ function getDisplayables(opts: Options): readonly Displayable[] {
       me: ele.classList.contains('jstest-local-client-video'),
       big: isBig(ele),
       muted: isMuted(ele),
-      name: ele.querySelector('[class|=nameBanner]')?.textContent,
-      videoEle: ele.querySelector('video'),
+      name: ele.querySelector('[class|=nameBanner]')?.textContent || 'no name',
+      videoEle,
       source: getSourceLocation(videoEle, layout),
     };
   });
@@ -82,7 +96,7 @@ function initMediaPipState(opts: Options): PipState {
   const { height, width } = opts.videoResolution;
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
-  // fixme: assert on context
+  assertIsDefined(context);
   const pipVideo = document.createElement('video');
   canvas.width = width;
   canvas.height = height;
