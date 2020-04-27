@@ -25,5 +25,10 @@ export function getLayout(
   boxes: readonly InputBox[],
 ): readonly LayoutBox[] {
   const layoutManger = initLayoutContainer(null, opts);
-  return layoutManger.getLayout(boxes);
+  return layoutManger.getLayout(boxes).map((e) => ({
+    x: e.left,
+    y: e.top,
+    w: e.width,
+    h: e.height,
+  }));
 }
