@@ -5,7 +5,7 @@ import { loadOptions, getSourceCrop } from './util';
 // @ts-ignore
 const isDev = process.env.NODE_ENV === 'development';
 
-let showPip = false;
+const TIME_BETWEEN_DISPLAYABLE_UPDATES_MS = 500;
 
 function assertIsDefined<T>(val: T): asserts val is NonNullable<T> {
   if (val === undefined || val === null) {
@@ -47,7 +47,6 @@ function pairs<T1, T2>(
 
 /**
  * fixme: this can be cleaned up probs.
- * @param state
  */
 function getDisplayables(opts: Options): readonly Displayable[] {
   const { height, width } = opts.videoResolution;
@@ -170,10 +169,10 @@ async function mainLoop(pipContext: CanvasRenderingContext2D, opts: Options) {
   const frameDelay = Math.ceil(1000 / opts.frameRate);
   let displayableUpdateTs = 0;
   let displayables: readonly Displayable[] = [];
-  while (showPip) {
+  while (document.pictureInPictureElement) {
     const now = Date.now();
-    // fixme: const
-    if (now - displayableUpdateTs > 500) {
+
+    if (now - displayableUpdateTs > TIME_BETWEEN_DISPLAYABLE_UPDATES_MS) {
       displayables = getDisplayables(opts);
       displayableUpdateTs = now;
     }
@@ -195,15 +194,14 @@ async function videoReady(video: HTMLVideoElement) {
 async function main() {
   const opts = await loadOptions();
 
-  showPip = !showPip;
-
-  if (showPip) {
+  if (document.pictureInPictureElement) {
+    await document.exitPictureInPicture();
+  } else {
     const { pipContext, pipVideo } = initMedia(opts);
     await videoReady(pipVideo);
     document.body.appendChild(pipVideo);
     await pipVideo.requestPictureInPicture();
     await mainLoop(pipContext, opts);
-    await document.exitPictureInPicture();
     pipVideo.srcObject = null;
     pipVideo.remove();
   }
