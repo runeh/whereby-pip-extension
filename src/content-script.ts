@@ -1,5 +1,5 @@
 import { getLayout, LayoutBox } from './layout';
-import { Displayable, PipState, Options } from './types';
+import { Displayable, Options } from './types';
 import { loadOptions, getSourceCrop } from './util';
 
 // @ts-ignore
@@ -102,36 +102,12 @@ interface MediaObjects {
   pipVideo: HTMLVideoElement;
 }
 
-function initMediaObjects(): MediaObjects {
+function initMedia(opts: Options): MediaObjects {
+  const { width, height } = opts.videoResolution;
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   assertIsDefined(context);
 
-  const pipVideo = document.createElement('video');
-  canvas.width = 320;
-  canvas.height = 240;
-
-  pipVideo.muted = true;
-  pipVideo.autoplay = true;
-  pipVideo.srcObject = canvas.captureStream();
-
-  return { canvas, context, pipVideo };
-}
-
-function updateMediaObjects(
-  current: MediaObjects,
-  opts: Options,
-): MediaObjects {
-  current.canvas.width = opts.videoResolution.width;
-  current.canvas.height = opts.videoResolution.height;
-  return current;
-}
-
-function initMediaPipState(opts: Options): PipState {
-  const { height, width } = opts.videoResolution;
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  assertIsDefined(context);
   const pipVideo = document.createElement('video');
   canvas.width = width;
   canvas.height = height;
@@ -139,18 +115,27 @@ function initMediaPipState(opts: Options): PipState {
   pipVideo.muted = true;
   pipVideo.autoplay = true;
   pipVideo.srcObject = canvas.captureStream();
+  pipVideo.style.visibility = 'hidden';
+  pipVideo.dataset.lollerskates = 'asdf';
+  pipVideo.style.width = '0';
+  pipVideo.style.height = '0';
 
-  context.clearRect(0, 0, width, height);
+  context.fillStyle = '#000000';
+  // Rendering something to the canvas makes sure the video gets
+  // to the correct ready state
+  context.fillRect(0, 0, width, height);
 
-  const sources = document.getElementsByTagName('video');
-  return {
-    canvas,
-    context,
-    pipVideo,
-    videoContainers: sources,
-    config: { displayableRefreshMs: 600 },
-  };
+  return { canvas, context, pipVideo };
 }
+
+// function updateMediaObjects(
+//   current: MediaObjects,
+//   opts: Options,
+// ): MediaObjects {
+//   current.canvas.width = opts.videoResolution.width;
+//   current.canvas.height = opts.videoResolution.height;
+//   return current;
+// }
 
 function isBig(ele: HTMLElement): boolean {
   if (ele.dataset.clientid === 'local-screenshare') {
@@ -165,14 +150,12 @@ function isMuted(ele: HTMLElement): boolean {
   return ele.querySelector('.jstest-mute-icon') != null;
 }
 
-function tick(
-  state: PipState,
+function renderFrame(
+  context: CanvasRenderingContext2D,
   opts: Options,
   displayables: readonly Displayable[],
 ) {
-  const { context, canvas } = state;
-
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
   displayables.forEach((e) => {
     const { source, layout, muted, videoEle } = e;
@@ -198,32 +181,25 @@ function sleep(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-async function mainLoop(state: PipState, opts: Options) {
+async function mainLoop(media: MediaObjects, opts: Options) {
   const frameDelay = Math.ceil(1000 / opts.frameRate);
   let displayableUpdateTs = 0;
   let displayables: readonly Displayable[] = [];
   while (showPip) {
     const now = Date.now();
-    if (now - displayableUpdateTs > state.config.displayableRefreshMs) {
+    // fixme: const
+    if (now - displayableUpdateTs > 500) {
       displayables = getDisplayables(opts);
       displayableUpdateTs = now;
     }
-    tick(state, opts, displayables);
+    renderFrame(media.context, opts, displayables);
     await sleep(frameDelay);
   }
 }
 
-async function initExtension(opts: Options) {
-  const state = initMediaPipState(opts);
-  const { pipVideo } = state;
-  pipVideo.style.visibility = 'hidden';
-  document.body.appendChild(pipVideo);
-  return state;
-}
-
-async function videoReady(state: PipState) {
+async function videoReady(media: MediaObjects) {
   while (true) {
-    if (state.pipVideo.readyState === state.pipVideo.HAVE_ENOUGH_DATA) {
+    if (media.pipVideo.readyState === media.pipVideo.HAVE_ENOUGH_DATA) {
       return;
     }
     await sleep(33);
@@ -231,21 +207,20 @@ async function videoReady(state: PipState) {
 }
 
 let mediaObjects: MediaObjects | undefined;
-let currentState: PipState | undefined;
 
 async function main() {
   const opts = await loadOptions();
-  showPip = !showPip;
-  currentState = currentState || (await initExtension(opts));
+  mediaObjects = initMedia(opts);
 
+  showPip = !showPip;
+  console.log('showit?', showPip);
   if (showPip) {
-    await videoReady(currentState);
-    await currentState.pipVideo.requestPictureInPicture();
-    await mainLoop(currentState, opts);
+    await videoReady(mediaObjects);
+    document.body.appendChild(mediaObjects.pipVideo);
+    await mediaObjects.pipVideo.requestPictureInPicture();
+    await mainLoop(mediaObjects, opts);
     await document.exitPictureInPicture();
-    currentState.pipVideo.remove();
-    currentState.pipVideo.srcObject = null;
-    currentState = undefined;
+    mediaObjects.pipVideo.remove();
   }
 }
 

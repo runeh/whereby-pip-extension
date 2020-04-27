@@ -5,10 +5,6 @@ export interface Resolution {
   height: number;
 }
 
-export interface Config {
-  displayableRefreshMs: number;
-}
-
 export interface Options {
   flipSelf: boolean;
   showMuteIndicator: boolean;
@@ -17,14 +13,6 @@ export interface Options {
   videoResolution: Resolution;
   frameRate: number;
   keepAspectRatio: boolean;
-}
-
-export interface PipState {
-  canvas: HTMLCanvasElement;
-  context: CanvasRenderingContext2D;
-  pipVideo: HTMLVideoElement;
-  videoContainers: HTMLCollectionOf<HTMLElement>;
-  config: Config;
 }
 
 export interface Displayable {
