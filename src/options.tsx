@@ -33,9 +33,11 @@ const FrameRateOption: FunctionComponent<{
   return (
     <div>
       <label>
-        {label}
+        {label}{' '}
         <input
           type="number"
+          min="1"
+          max="60"
           value={value}
           onChange={(e) => onChange(Number(e.currentTarget.value))}
         />
@@ -61,11 +63,13 @@ const ResolutionOption: FunctionComponent<{
         <label>
           <input
             type="number"
+            min="100"
+            max="10000"
             value={width}
             onChange={(e) =>
               onChange({ width: Number(e.currentTarget.value), height })
             }
-          ></input>
+          ></input>{' '}
           width
         </label>
       </div>
@@ -74,11 +78,13 @@ const ResolutionOption: FunctionComponent<{
         <label>
           <input
             type="number"
+            min="100"
+            max="10000"
             value={height}
             onChange={(e) =>
               onChange({ width, height: Number(e.currentTarget.value) })
             }
-          ></input>
+          ></input>{' '}
           height
         </label>
       </div>
@@ -102,7 +108,7 @@ const BooleanOption: FunctionComponent<{
           type="checkbox"
           checked={value}
           onChange={(e) => onChange(e.currentTarget.checked)}
-        ></input>
+        ></input>{' '}
         {label}
       </label>
       <p>{helpText}</p>
@@ -151,12 +157,16 @@ const App: FunctionComponent = () => {
         onChange={(showMuteIndicator) => updateOptions({ showMuteIndicator })}
       />
 
+      <hr />
+
       <BooleanOption
         label="Flip own video"
         value={dirtyOpts.flipSelf}
         helpText="Not implemented! Flip the image of your own video"
         onChange={(flipSelf) => updateOptions({ flipSelf })}
       />
+
+      <hr />
 
       <BooleanOption
         label="Preserve aspect ratio"
@@ -165,6 +175,8 @@ const App: FunctionComponent = () => {
         onChange={(keepAspectRatio) => updateOptions({ keepAspectRatio })}
       />
 
+      <hr />
+
       <BooleanOption
         label="Show names"
         value={dirtyOpts.showNames}
@@ -172,24 +184,34 @@ const App: FunctionComponent = () => {
         onChange={(showNames) => updateOptions({ showNames })}
       />
 
+      <hr />
+
       <BooleanOption
         label="Show own camera"
         value={dirtyOpts.showOwnVideo}
         helpText="Whether or not to show your own camera in the PiP window"
         onChange={(showOwnVideo) => updateOptions({ showOwnVideo })}
       />
+
+      <hr />
+
       <FrameRateOption
         label="Frame rate"
         value={dirtyOpts.frameRate}
         helpText="The desired frame rate of the PiP video"
         onChange={(frameRate) => updateOptions({ frameRate })}
       />
+
+      <hr />
+
       <ResolutionOption
         label="Resolution"
         value={dirtyOpts.videoResolution}
         onChange={(videoResolution) => updateOptions({ videoResolution })}
         helpText="The resolution of the pip video. This affects how sharp the video is, not how big it's shown on your screen"
       />
+
+      <hr />
 
       <div>
         <button type="button" onClick={onSave}>
