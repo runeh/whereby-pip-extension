@@ -9,4 +9,4 @@
 - when save, apply settings
 - fix toggling
 - recalculate displayables less often
-- use x,y,w,h everywhere
+- Rip out relevant part of of layout lib

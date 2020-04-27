@@ -28,10 +28,10 @@ function getSourceLocation(
 ): LayoutBox {
   const ret = getSourceCrop(
     { w: videoEle.videoWidth, h: videoEle.videoHeight },
-    { w: layout.width, h: layout.height },
+    { w: layout.w, h: layout.h },
   );
 
-  return { height: ret.h, width: ret.w, left: ret.x, top: ret.y };
+  return { h: ret.h, w: ret.w, x: ret.x, y: ret.y };
 }
 
 function pairs<T1, T2>(
@@ -170,19 +170,19 @@ function tick(state: PipState, opts: Options) {
     const { source, layout, muted, videoEle } = e;
     context.drawImage(
       videoEle,
-      source.left,
-      source.top,
-      source.width,
-      source.height,
-      layout.left,
-      layout.top,
-      layout.width,
-      layout.height,
+      source.x,
+      source.y,
+      source.w,
+      source.h,
+      layout.x,
+      layout.y,
+      layout.w,
+      layout.h,
     );
     context.lineWidth = opts.showMuteIndicator && muted ? 4 : 1;
     context.strokeStyle =
       opts.showMuteIndicator && muted ? '#FF0000' : '#000000';
-    context.strokeRect(layout.left, layout.top, layout.width, layout.height);
+    context.strokeRect(layout.x, layout.y, layout.w, layout.h);
   });
 }
 

@@ -14,10 +14,10 @@ interface LayoutOpts {
 }
 
 export interface LayoutBox {
-  left: number;
-  top: number;
-  height: number;
-  width: number;
+  x: number;
+  y: number;
+  h: number;
+  w: number;
 }
 
 export function getLayout(
