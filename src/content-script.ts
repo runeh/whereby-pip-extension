@@ -96,13 +96,7 @@ function getDisplayables(opts: Options): readonly Displayable[] {
   });
 }
 
-interface MediaObjects {
-  canvas: HTMLCanvasElement;
-  context: CanvasRenderingContext2D;
-  pipVideo: HTMLVideoElement;
-}
-
-function initMedia(opts: Options): MediaObjects {
+function initMedia(opts: Options) {
   const { width, height } = opts.videoResolution;
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
@@ -125,17 +119,8 @@ function initMedia(opts: Options): MediaObjects {
   // to the correct ready state
   context.fillRect(0, 0, width, height);
 
-  return { canvas, context, pipVideo };
+  return { pipContext: context, pipVideo };
 }
-
-// function updateMediaObjects(
-//   current: MediaObjects,
-//   opts: Options,
-// ): MediaObjects {
-//   current.canvas.width = opts.videoResolution.width;
-//   current.canvas.height = opts.videoResolution.height;
-//   return current;
-// }
 
 function isBig(ele: HTMLElement): boolean {
   if (ele.dataset.clientid === 'local-screenshare') {
@@ -181,7 +166,7 @@ function sleep(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-async function mainLoop(media: MediaObjects, opts: Options) {
+async function mainLoop(pipContext: CanvasRenderingContext2D, opts: Options) {
   const frameDelay = Math.ceil(1000 / opts.frameRate);
   let displayableUpdateTs = 0;
   let displayables: readonly Displayable[] = [];
@@ -192,35 +177,35 @@ async function mainLoop(media: MediaObjects, opts: Options) {
       displayables = getDisplayables(opts);
       displayableUpdateTs = now;
     }
-    renderFrame(media.context, opts, displayables);
+
+    renderFrame(pipContext, opts, displayables);
     await sleep(frameDelay);
   }
 }
 
-async function videoReady(media: MediaObjects) {
+async function videoReady(video: HTMLVideoElement) {
   while (true) {
-    if (media.pipVideo.readyState === media.pipVideo.HAVE_ENOUGH_DATA) {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
       return;
     }
     await sleep(33);
   }
 }
 
-let mediaObjects: MediaObjects | undefined;
-
 async function main() {
   const opts = await loadOptions();
-  mediaObjects = initMedia(opts);
 
   showPip = !showPip;
-  console.log('showit?', showPip);
+
   if (showPip) {
-    await videoReady(mediaObjects);
-    document.body.appendChild(mediaObjects.pipVideo);
-    await mediaObjects.pipVideo.requestPictureInPicture();
-    await mainLoop(mediaObjects, opts);
+    const { pipContext, pipVideo } = initMedia(opts);
+    await videoReady(pipVideo);
+    document.body.appendChild(pipVideo);
+    await pipVideo.requestPictureInPicture();
+    await mainLoop(pipContext, opts);
     await document.exitPictureInPicture();
-    mediaObjects.pipVideo.remove();
+    pipVideo.srcObject = null;
+    pipVideo.remove();
   }
 }
 

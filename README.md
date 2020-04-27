@@ -10,3 +10,4 @@
 - fix toggling
 - recalculate displayables less often
 - Rip out relevant part of of layout lib
+- Remove config
