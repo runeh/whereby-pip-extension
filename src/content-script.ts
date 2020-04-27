@@ -106,7 +106,6 @@ function initMedia(opts: Options) {
   pipVideo.autoplay = true;
   pipVideo.srcObject = canvas.captureStream();
   pipVideo.style.visibility = 'hidden';
-  pipVideo.dataset.lollerskates = 'asdf';
   pipVideo.style.width = '0';
   pipVideo.style.height = '0';
 
@@ -206,4 +205,8 @@ async function main() {
 
 chrome.runtime.onMessage.addListener((_message) => {
   main();
+});
+
+chrome.storage.onChanged.addListener(async () => {
+  // todo: figure out something
 });
