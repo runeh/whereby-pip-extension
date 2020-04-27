@@ -45,26 +45,41 @@ interface Crop {
   h: number;
 }
 
-export function getSourceCrop(source: Size, destination: Size): Crop {
-  const inputAspectRatio = source.w / source.h;
-  const outputAspectRatio = destination.w / destination.h;
+export function getCropMode(
+  source: Size,
+  dest: Size,
+): 'equal' | 'source_is_greater' | 'destination_is_greater' {
+  const sourceAspectRatio = Math.round((source.w / source.h) * 1000);
+  const destAspectRatio = Math.round((dest.w / dest.h) * 1000);
 
-  if (inputAspectRatio.toPrecision(4) === outputAspectRatio.toPrecision(4)) {
-    return { x: 0, y: 0, w: source.w, h: source.h };
-  } else if (inputAspectRatio > outputAspectRatio) {
-    const y = 0;
-    const h = source.h;
-    const w = h * outputAspectRatio;
-    const x = source.w * 0.5 - w * 0.5;
-    return { x, y, w, h };
-  } else if (inputAspectRatio < outputAspectRatio) {
-    const x = 0;
-    const w = source.w;
-    const h = w * outputAspectRatio;
-    const y = source.h * 0.5 - h * 0.5;
-    return { x, y, w, h };
+  if (sourceAspectRatio === destAspectRatio) {
+    return 'equal';
+  } else if (sourceAspectRatio > destAspectRatio) {
+    return 'source_is_greater';
+  } else {
+    return 'destination_is_greater';
   }
+}
 
-  // fixme, have a helper that returns 'equal', 'greater', 'lesser' and switch?
-  throw new Error('halp');
+export function getSourceCrop(source: Size, dest: Size): Crop {
+  const destAspectRatio = dest.w / dest.h;
+
+  switch (getCropMode(source, dest)) {
+    case 'equal':
+      return { x: 0, y: 0, w: source.w, h: source.h };
+    case 'source_is_greater': {
+      const y = 0;
+      const h = source.h;
+      const w = h * destAspectRatio;
+      const x = source.w * 0.5 - w * 0.5;
+      return { x, y, w, h };
+    }
+    case 'destination_is_greater': {
+      const x = 0;
+      const w = source.w;
+      const h = w * destAspectRatio;
+      const y = source.h * 0.5 - h * 0.5;
+      return { x, y, w, h };
+    }
+  }
 }

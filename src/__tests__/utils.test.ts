@@ -46,7 +46,7 @@ describe('getSourceCrop', () => {
     const croppedRatio = (cropped.w / cropped.h).toFixed(3);
 
     expect(croppedRatio).toEqual(destinationRatio);
-    expect(cropped).toEqual({ x: 0, y: 0, w: 630, h: 360 });
+    expect(cropped).toEqual({ x: 0, y: 0, w: 640, h: 360 });
   });
 
   test('source ratio is greater (wider), source is smaller, 1', () => {
