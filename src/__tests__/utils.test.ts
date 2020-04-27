@@ -37,6 +37,18 @@ describe('getSourceCrop', () => {
     expect(cropped).toEqual({ x: 0, y: 0, w: 200, h: 800 });
   });
 
+  test('same ratio but rounding errors', () => {
+    const source = { w: 640, h: 360 };
+    const destination = { w: 1155.5555555555557, h: 650 };
+    const destinationRatio = (destination.w / destination.h).toFixed(3);
+
+    const cropped = getSourceCrop(source, destination);
+    const croppedRatio = (cropped.w / cropped.h).toFixed(3);
+
+    expect(croppedRatio).toEqual(destinationRatio);
+    expect(cropped).toEqual({ x: 0, y: 0, w: 630, h: 360 });
+  });
+
   test('source ratio is greater (wider), source is smaller, 1', () => {
     const source = { w: 400, h: 200 };
     const destination = { w: 600, h: 600 };

@@ -49,7 +49,7 @@ export function getSourceCrop(source: Size, destination: Size): Crop {
   const inputAspectRatio = source.w / source.h;
   const outputAspectRatio = destination.w / destination.h;
 
-  if (inputAspectRatio === outputAspectRatio) {
+  if (inputAspectRatio.toPrecision(4) === outputAspectRatio.toPrecision(4)) {
     return { x: 0, y: 0, w: source.w, h: source.h };
   } else if (inputAspectRatio > outputAspectRatio) {
     const y = 0;
@@ -65,8 +65,6 @@ export function getSourceCrop(source: Size, destination: Size): Crop {
     return { x, y, w, h };
   }
 
-  // fixme, have a helper that returns 'equal', 'greater', 'lesser' and swith?
-  console.log(source, destination);
-  console.log(inputAspectRatio, outputAspectRatio);
+  // fixme, have a helper that returns 'equal', 'greater', 'lesser' and switch?
   throw new Error('halp');
 }

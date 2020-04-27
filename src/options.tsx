@@ -161,7 +161,7 @@ const App: FunctionComponent = () => {
       <BooleanOption
         label="Preserve aspect ratio"
         value={dirtyOpts.keepAspectRatio}
-        helpText="Not implemented! Preserve the aspect ratio of the videos, or allow them to be cropped to better fit the PiP window"
+        helpText="Preserve the aspect ratio of the videos, or allow them to be cropped to better fit the PiP window"
         onChange={(keepAspectRatio) => updateOptions({ keepAspectRatio })}
       />
 
