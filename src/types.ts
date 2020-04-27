@@ -5,6 +5,10 @@ export interface Resolution {
   height: number;
 }
 
+export interface Config {
+  displayableRefreshMs: number;
+}
+
 export interface Options {
   flipSelf: boolean;
   showMuteIndicator: boolean;
@@ -20,6 +24,7 @@ export interface PipState {
   context: CanvasRenderingContext2D;
   pipVideo: HTMLVideoElement;
   videoContainers: HTMLCollectionOf<HTMLElement>;
+  config: Config;
 }
 
 export interface Displayable {

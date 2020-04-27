@@ -140,8 +140,16 @@ function initMediaPipState(opts: Options): PipState {
   pipVideo.autoplay = true;
   pipVideo.srcObject = canvas.captureStream();
 
+  context.clearRect(0, 0, width, height);
+
   const sources = document.getElementsByTagName('video');
-  return { canvas, context, pipVideo, videoContainers: sources };
+  return {
+    canvas,
+    context,
+    pipVideo,
+    videoContainers: sources,
+    config: { displayableRefreshMs: 600 },
+  };
 }
 
 function isBig(ele: HTMLElement): boolean {
@@ -157,12 +165,12 @@ function isMuted(ele: HTMLElement): boolean {
   return ele.querySelector('.jstest-mute-icon') != null;
 }
 
-function tick(state: PipState, opts: Options) {
+function tick(
+  state: PipState,
+  opts: Options,
+  displayables: readonly Displayable[],
+) {
   const { context, canvas } = state;
-
-  // should trigger outside of the tick.
-  // maybe rename "tick" to "render"
-  const displayables = getDisplayables(opts);
 
   context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -192,8 +200,15 @@ function sleep(ms: number) {
 
 async function mainLoop(state: PipState, opts: Options) {
   const frameDelay = Math.ceil(1000 / opts.frameRate);
+  let displayableUpdateTs = 0;
+  let displayables: readonly Displayable[] = [];
   while (showPip) {
-    tick(state, opts);
+    const now = Date.now();
+    if (now - displayableUpdateTs > state.config.displayableRefreshMs) {
+      displayables = getDisplayables(opts);
+      displayableUpdateTs = now;
+    }
+    tick(state, opts, displayables);
     await sleep(frameDelay);
   }
 }
@@ -224,7 +239,6 @@ async function main() {
   currentState = currentState || (await initExtension(opts));
 
   if (showPip) {
-    tick(currentState, opts);
     await videoReady(currentState);
     await currentState.pipVideo.requestPictureInPicture();
     await mainLoop(currentState, opts);
