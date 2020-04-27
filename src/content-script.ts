@@ -18,6 +18,10 @@ function getVideo(ele: HTMLElement): HTMLVideoElement {
   return video;
 }
 
+function getName(ele: HTMLElement): string | undefined {
+  return ele.querySelector('[class|=nameBanner]')?.textContent || undefined;
+}
+
 function getSourceLocation(
   videoEle: HTMLVideoElement,
   layout: LayoutBox,
@@ -56,8 +60,8 @@ function getDisplayables(opts: Options): readonly Displayable[] {
       return isOwnVideo ? opts.showOwnVideo : true;
     })
     .filter((e) => {
-      const video = e.querySelector('video');
-      return video?.videoWidth && video?.videoHeight;
+      const video = getVideo(e);
+      return video.videoWidth && video.videoHeight;
     });
 
   const layouts = getLayout(
@@ -85,11 +89,42 @@ function getDisplayables(opts: Options): readonly Displayable[] {
       me: ele.classList.contains('jstest-local-client-video'),
       big: isBig(ele),
       muted: isMuted(ele),
-      name: ele.querySelector('[class|=nameBanner]')?.textContent || 'no name',
+      name: getName(ele) || 'no name',
       videoEle,
       source: getSourceLocation(videoEle, layout),
     };
   });
+}
+
+interface MediaObjects {
+  canvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
+  pipVideo: HTMLVideoElement;
+}
+
+function initMediaObjects(): MediaObjects {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  assertIsDefined(context);
+
+  const pipVideo = document.createElement('video');
+  canvas.width = 320;
+  canvas.height = 240;
+
+  pipVideo.muted = true;
+  pipVideo.autoplay = true;
+  pipVideo.srcObject = canvas.captureStream();
+
+  return { canvas, context, pipVideo };
+}
+
+function updateMediaObjects(
+  current: MediaObjects,
+  opts: Options,
+): MediaObjects {
+  current.canvas.width = opts.videoResolution.width;
+  current.canvas.height = opts.videoResolution.height;
+  return current;
 }
 
 function initMediaPipState(opts: Options): PipState {
@@ -109,12 +144,17 @@ function initMediaPipState(opts: Options): PipState {
   return { canvas, context, pipVideo, videoContainers: sources };
 }
 
-function isBig(element: HTMLElement): boolean {
-  return element.dataset.clientid === 'local-screenshare';
+function isBig(ele: HTMLElement): boolean {
+  if (ele.dataset.clientid === 'local-screenshare') {
+    return true;
+  } else {
+    const name = getName(ele);
+    return name !== undefined && name.includes('Screenshare');
+  }
 }
 
-function isMuted(element: HTMLElement): boolean {
-  return element.querySelector('.jstest-mute-icon') != null;
+function isMuted(ele: HTMLElement): boolean {
+  return ele.querySelector('.jstest-mute-icon') != null;
 }
 
 function tick(state: PipState, opts: Options) {
@@ -175,6 +215,7 @@ async function videoReady(state: PipState) {
   }
 }
 
+let mediaObjects: MediaObjects | undefined;
 let currentState: PipState | undefined;
 
 async function main() {
