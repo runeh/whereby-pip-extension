@@ -4720,10 +4720,10 @@ onetime@^5.1.0:
   dependencies:
     mimic-fn "^2.1.0"
 
-opentok-layout-js@^3.5.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/opentok-layout-js/-/opentok-layout-js-3.5.0.tgz#0c808a715d7a13e1547945ad4f1974e57f104e42"
-  integrity sha512-RUrFtru1Nkn48poFJTxQCHwzeoRD/QFJomdkESErBysnl3F5VLrbCxGv29fBWgDx4l3lV+egEGT5x4eO690MMQ==
+opentok-layout-js@^3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/opentok-layout-js/-/opentok-layout-js-3.6.0.tgz#31cabae2ce756ba83f80fa194aa0191773119d04"
+  integrity sha512-N75FZz45XKfsz3WanaBD3Q5/aTrFllvdBJfKEhPKP9PTh4xgrNMy2n7Ql5cW2loPzNdYnZ36lDoJA0kNrpi+gQ==
 
 opn@^5.1.0:
   version "5.5.0"

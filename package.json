@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "goober": "^1.7.1",
-    "opentok-layout-js": "^3.5.0",
+    "opentok-layout-js": "^3.6.0",
     "preact": "^10.4.1"
   },
   "browserslist": [

@@ -80,9 +80,6 @@ function getDisplayables(opts: Options): readonly Displayable[] {
   return pairs(eles, layouts).map<Displayable>((pair) => {
     const [ele, layout] = pair;
     const videoEle = getVideo(ele);
-    if (!videoEle) {
-      throw new Error('blargh'); // fixme: use assertion ts
-    }
     return {
       layout,
       me: ele.classList.contains('jstest-local-client-video'),
