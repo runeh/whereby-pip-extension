@@ -150,9 +150,12 @@ function renderFrame(
       layout.w,
       layout.h,
     );
-    context.lineWidth = opts.showMuteIndicator && muted ? 4 : 1;
-    context.strokeStyle =
-      opts.showMuteIndicator && muted ? '#FF0000' : '#000000';
+    if (muted) {
+      context.fillStyle = '#f26b4d';
+      context.fillRect(layout.x, layout.y + layout.h - 24, 24, 24);
+    }
+    context.lineWidth = 1;
+    context.strokeStyle = '#000000';
     context.strokeRect(layout.x, layout.y, layout.w, layout.h);
   });
 }
