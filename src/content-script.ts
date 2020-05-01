@@ -1,17 +1,28 @@
 import { getLayout, LayoutBox } from './layout';
-import { Displayable, Options } from './types';
+import { Displayable, Options, PiPMedia } from './types';
 import { loadOptions, getSourceCrop } from './util';
+import { mute as muteIconDataUri } from './icons';
 
 // @ts-ignore
 const isDev = process.env.NODE_ENV === 'development';
 
 const TIME_BETWEEN_DISPLAYABLE_UPDATES_MS = 500;
 
+async function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = (err) => reject(err);
+    img.src = src;
+  });
+}
+
 function assertIsDefined<T>(val: T): asserts val is NonNullable<T> {
   if (val === undefined || val === null) {
     throw new Error(`Expected 'val' to be defined, but received ${val}`);
   }
 }
+
 function getVideo(ele: HTMLElement): HTMLVideoElement {
   const video = ele.querySelector('video');
   assertIsDefined(video);
@@ -92,7 +103,7 @@ function getDisplayables(opts: Options): readonly Displayable[] {
   });
 }
 
-function initMedia(opts: Options) {
+async function initMedia(opts: Options): Promise<PiPMedia> {
   const { width, height } = opts.videoResolution;
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
@@ -132,8 +143,9 @@ function isMuted(ele: HTMLElement): boolean {
 
 function renderFrame(
   context: CanvasRenderingContext2D,
-  opts: Options,
+  _opts: Options,
   displayables: readonly Displayable[],
+  muteIcon: HTMLImageElement,
 ) {
   context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
@@ -150,10 +162,14 @@ function renderFrame(
       layout.w,
       layout.h,
     );
+
     if (muted) {
-      context.fillStyle = '#f26b4d';
-      context.fillRect(layout.x, layout.y + layout.h - 24, 24, 24);
+      const iconHeight = 64;
+      const x = 4;
+      const y = layout.h - iconHeight - 4;
+      context.drawImage(muteIcon, x, y, iconHeight, iconHeight);
     }
+
     context.lineWidth = 1;
     context.strokeStyle = '#000000';
     context.strokeRect(layout.x, layout.y, layout.w, layout.h);
@@ -164,8 +180,10 @@ function sleep(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-async function mainLoop(pipContext: CanvasRenderingContext2D, opts: Options) {
+async function mainLoop(context: CanvasRenderingContext2D, opts: Options) {
   const frameDelay = Math.ceil(1000 / opts.frameRate);
+  const muteIcon = await loadImage(muteIconDataUri);
+
   let displayableUpdateTs = 0;
   let displayables: readonly Displayable[] = [];
   while (document.pictureInPictureElement) {
@@ -176,7 +194,7 @@ async function mainLoop(pipContext: CanvasRenderingContext2D, opts: Options) {
       displayableUpdateTs = now;
     }
 
-    renderFrame(pipContext, opts, displayables);
+    renderFrame(context, opts, displayables, muteIcon);
     await sleep(frameDelay);
   }
 }
@@ -196,7 +214,7 @@ async function main() {
   if (document.pictureInPictureElement) {
     await document.exitPictureInPicture();
   } else {
-    const { pipContext, pipVideo } = initMedia(opts);
+    const { pipContext, pipVideo } = await initMedia(opts);
     await videoReady(pipVideo);
     document.body.appendChild(pipVideo);
     await pipVideo.requestPictureInPicture();

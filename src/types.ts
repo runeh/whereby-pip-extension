@@ -24,3 +24,8 @@ export interface Displayable {
   big: boolean;
   me: boolean;
 }
+
+export interface PiPMedia {
+  pipContext: CanvasRenderingContext2D;
+  pipVideo: HTMLVideoElement;
+}

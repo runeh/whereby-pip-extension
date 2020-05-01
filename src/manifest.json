@@ -9,7 +9,7 @@
 
   "background": {
     "scripts": ["background.ts"],
-    "persistent": true
+    "persistent": false
   },
 
   "page_action": {
