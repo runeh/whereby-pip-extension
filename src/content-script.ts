@@ -165,8 +165,9 @@ function renderFrame(
 
     if (muted) {
       const iconHeight = 64;
-      const x = 4;
-      const y = layout.h - iconHeight - 4;
+      const offset = 10;
+      const x = offset;
+      const y = layout.h - iconHeight - offset;
       context.drawImage(muteIcon, x, y, iconHeight, iconHeight);
     }
 
