@@ -143,14 +143,14 @@ function isMuted(ele: HTMLElement): boolean {
 
 function renderFrame(
   context: CanvasRenderingContext2D,
-  _opts: Options,
+  opts: Options,
   displayables: readonly Displayable[],
   muteIcon: HTMLImageElement,
 ) {
   context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
   displayables.forEach((e) => {
-    const { source, layout, muted, videoEle } = e;
+    const { source, layout, muted, videoEle, name } = e;
     context.drawImage(
       videoEle,
       source.x,
@@ -163,12 +163,34 @@ function renderFrame(
       layout.h,
     );
 
-    if (muted) {
-      const iconHeight = 64;
-      const offset = 10;
-      const x = offset;
-      const y = layout.h - iconHeight - offset;
-      context.drawImage(muteIcon, x, y, iconHeight, iconHeight);
+    const iconSize = 64;
+    const padding = 10;
+
+    if (opts.showMuteIndicator && muted) {
+      const x = padding;
+      const y = layout.h - iconSize - padding;
+      context.drawImage(muteIcon, x, y, iconSize, iconSize);
+    }
+
+    if (opts.showNames) {
+      const fontSize = Math.floor(layout.h / 16);
+      context.font = `${fontSize}px sans-serif`;
+      context.textBaseline = 'bottom';
+
+      const textX = padding + (opts.showMuteIndicator ? iconSize : 0) + padding;
+      const textY = layout.h - padding;
+      const textWidth = context.measureText(name).width;
+
+      const boxX = padding + (opts.showMuteIndicator ? iconSize : 0) + padding;
+      const boxY = layout.h - padding - fontSize;
+      const boxH = fontSize;
+      const boxW = textWidth;
+
+      context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      context.fillRect(boxX, boxY, boxW, boxH);
+
+      context.fillStyle = '#FFFFFF';
+      context.fillText(name, textX, textY);
     }
 
     context.lineWidth = 1;
