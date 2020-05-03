@@ -1,7 +1,8 @@
 import { getLayout, LayoutBox } from './layout';
 import { Displayable, Options, PiPMedia } from './types';
-import { loadOptions, getSourceCrop, roundRectMask } from './util';
+import { loadOptions, getSourceCrop } from './util';
 import { mute as muteIconDataUri } from './icons';
+import { renderGuestFrame } from './rendering';
 
 // @ts-ignore
 const isDev = process.env.NODE_ENV === 'development';
@@ -141,95 +142,6 @@ function isMuted(ele: HTMLElement): boolean {
   return ele.querySelector('.jstest-mute-icon') != null;
 }
 
-function renderFrame(
-  context: CanvasRenderingContext2D,
-  opts: Options,
-  displayables: readonly Displayable[],
-  muteIcon: HTMLImageElement,
-) {
-  context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-
-  displayables.forEach((e) => {
-    const { source, layout, muted, videoEle, name } = e;
-    context.drawImage(
-      videoEle,
-      source.x,
-      source.y,
-      source.w,
-      source.h,
-      layout.x,
-      layout.y,
-      layout.w,
-      layout.h,
-    );
-
-    const iconSize = 64;
-    const padding = 10;
-
-    if (opts.showMuteIndicator && muted) {
-      const x = padding;
-      const y = layout.h - iconSize - padding;
-      context.save();
-      roundRectMask({
-        ctx: context,
-        x,
-        y,
-        w: iconSize,
-        h: iconSize,
-        radius: 12,
-      });
-      context.fillStyle = '#f26b4d';
-      context.fillRect(x, y, iconSize, iconSize);
-      context.drawImage(muteIcon, x + 4, y + 4, iconSize - 8, iconSize - 8);
-      context.restore();
-    }
-
-    /**
-     * Use translate on the canvas, so we don't need to care about
-     * the position on the canvas, just w/h ?
-     * Maybe mask it out, so frame can't overshoot?
-     */
-
-    if (opts.showNames) {
-      const fontSize = Math.floor(layout.h / 16);
-      context.font = `${fontSize}px sans-serif`;
-      context.textBaseline = 'bottom';
-
-      const textX =
-        padding + (opts.showMuteIndicator ? iconSize : 0) + padding + padding;
-      const textY = layout.h - padding;
-      const textWidth = context.measureText(name).width + padding * 3;
-
-      const boxX = padding + (opts.showMuteIndicator ? iconSize : 0) + padding;
-      const boxY = layout.h - padding - iconSize;
-      // const boxY = layout.h - padding - fontSize;
-      const boxH = iconSize;
-      const boxW = textWidth;
-
-      context.save();
-      roundRectMask({
-        ctx: context,
-        x: boxX,
-        y: boxY,
-        w: boxW,
-        h: boxH,
-        radius: 12,
-      });
-
-      context.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      context.fillRect(boxX, boxY, boxW, boxH);
-
-      context.fillStyle = '#FFFFFF';
-      context.fillText(name, textX, textY);
-      context.restore();
-    }
-
-    context.lineWidth = 1;
-    context.strokeStyle = '#000000';
-    context.strokeRect(layout.x, layout.y, layout.w, layout.h);
-  });
-}
-
 function sleep(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
@@ -248,7 +160,7 @@ async function mainLoop(context: CanvasRenderingContext2D, opts: Options) {
       displayableUpdateTs = now;
     }
 
-    renderFrame(context, opts, displayables, muteIcon);
+    renderGuestFrame(context, opts, displayables, muteIcon);
     await sleep(frameDelay);
   }
 }
