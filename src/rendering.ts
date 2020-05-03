@@ -21,28 +21,30 @@ function renderMuteIndicator(
   displayable: Displayable,
 ) {
   const { showMuteIndicator } = opts;
-  const { muted, layout } = displayable;
+  const { muted, layout, source } = displayable;
 
   if (!showMuteIndicator || !muted) {
     return;
   }
 
-  const iconSize = 64;
-  const padding = 10;
-
-  const x = padding;
-  const y = layout.h - iconSize - padding;
   ctx.save();
+
+  const { boxHeight, spacing, radius } = getDims();
+
+  ctx.translate(layout.x, layout.y);
+
+  const x = spacing;
+  const y = layout.h - boxHeight - spacing;
   roundRectMask({
     ctx: ctx,
     x,
     y,
-    w: iconSize,
-    h: iconSize,
-    radius: 12,
+    w: boxHeight,
+    h: boxHeight,
+    radius,
   });
   ctx.fillStyle = '#f26b4d';
-  ctx.fillRect(x, y, iconSize, iconSize);
+  ctx.fillRect(x, y, boxHeight, boxHeight);
 
   ctx.restore();
 }
@@ -153,4 +155,19 @@ function roundRectMask(opts: {
   ctx.clip();
 }
 
-// function getDims(w: number, h) {}
+interface RenderingDimensions {
+  fontSize: number;
+  radius: number;
+  spacing: number;
+  boxHeight: number;
+}
+
+// fixme: args here to calculate it with
+function getDims(): RenderingDimensions {
+  return {
+    fontSize: 48,
+    spacing: 12,
+    radius: 12,
+    boxHeight: 60,
+  };
+}
