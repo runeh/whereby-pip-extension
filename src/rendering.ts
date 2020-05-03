@@ -4,90 +4,114 @@ export function renderGuestFrame(
   ctx: CanvasRenderingContext2D,
   opts: Options,
   displayables: readonly Displayable[],
-  muteIcon: HTMLImageElement,
 ) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
+  ctx.save();
   displayables.forEach((e) => {
-    const { source, layout, muted, videoEle, name } = e;
-
-    ctx.drawImage(
-      videoEle,
-      source.x,
-      source.y,
-      source.w,
-      source.h,
-      layout.x,
-      layout.y,
-      layout.w,
-      layout.h,
-    );
-
-    const iconSize = 64;
-    const padding = 10;
-
-    if (opts.showMuteIndicator && muted) {
-      const x = padding;
-      const y = layout.h - iconSize - padding;
-      ctx.save();
-      roundRectMask({
-        ctx: ctx,
-        x,
-        y,
-        w: iconSize,
-        h: iconSize,
-        radius: 12,
-      });
-      ctx.fillStyle = '#f26b4d';
-      ctx.fillRect(x, y, iconSize, iconSize);
-      ctx.drawImage(muteIcon, x + 4, y + 4, iconSize - 8, iconSize - 8);
-      ctx.restore();
-    }
-
-    /**
-     * Use translate on the canvas, so we don't need to care about
-     * the position on the canvas, just w/h ?
-     * Maybe mask it out, so frame can't overshoot?
-     */
-
-    if (opts.showNames) {
-      const fontSize = Math.floor(layout.h / 16);
-      ctx.font = `${fontSize}px sans-serif`;
-      ctx.textBaseline = 'bottom';
-
-      const textX =
-        padding + (opts.showMuteIndicator ? iconSize : 0) + padding + padding;
-      const textY = layout.h - padding;
-      const textWidth = ctx.measureText(name).width + padding * 3;
-
-      const boxX = padding + (opts.showMuteIndicator ? iconSize : 0) + padding;
-      const boxY = layout.h - padding - iconSize;
-      // const boxY = layout.h - padding - fontSize;
-      const boxH = iconSize;
-      const boxW = textWidth;
-
-      ctx.save();
-      roundRectMask({
-        ctx: ctx,
-        x: boxX,
-        y: boxY,
-        w: boxW,
-        h: boxH,
-        radius: 12,
-      });
-
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(boxX, boxY, boxW, boxH);
-
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillText(name, textX, textY);
-      ctx.restore();
-    }
-
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = '#000000';
-    ctx.strokeRect(layout.x, layout.y, layout.w, layout.h);
+    renderFrame(ctx, e);
+    renderMuteIndicator(opts, ctx, e);
+    renderGuestName(opts, ctx, e);
   });
+  ctx.restore();
+}
+
+function renderMuteIndicator(
+  opts: Options,
+  ctx: CanvasRenderingContext2D,
+  displayable: Displayable,
+) {
+  const { showMuteIndicator } = opts;
+  const { muted, layout } = displayable;
+
+  if (showMuteIndicator || !muted) {
+    return;
+  }
+
+  const iconSize = 64;
+  const padding = 10;
+
+  const x = padding;
+  const y = layout.h - iconSize - padding;
+  ctx.save();
+  roundRectMask({
+    ctx: ctx,
+    x,
+    y,
+    w: iconSize,
+    h: iconSize,
+    radius: 12,
+  });
+  ctx.fillStyle = '#f26b4d';
+  ctx.fillRect(x, y, iconSize, iconSize);
+
+  ctx.restore();
+}
+
+function renderGuestName(
+  opts: Options,
+  ctx: CanvasRenderingContext2D,
+  displayable: Displayable,
+) {
+  if (!opts.showNames) {
+    return;
+  }
+
+  const { layout } = displayable;
+  const iconSize = 64;
+  const padding = 12;
+
+  const fontSize = Math.floor(layout.h / 16);
+  ctx.font = `${fontSize}px sans-serif`;
+  ctx.textBaseline = 'bottom';
+
+  const textX =
+    padding + (opts.showMuteIndicator ? iconSize : 0) + padding + padding;
+  const textY = layout.h - padding;
+  const textWidth = ctx.measureText(name).width + padding * 3;
+
+  const boxX = padding + (opts.showMuteIndicator ? iconSize : 0) + padding;
+  const boxY = layout.h - padding - iconSize;
+  // const boxY = layout.h - padding - fontSize;
+  const boxH = iconSize;
+  const boxW = textWidth;
+
+  ctx.save();
+  roundRectMask({
+    ctx: ctx,
+    x: boxX,
+    y: boxY,
+    w: boxW,
+    h: boxH,
+    radius: 12,
+  });
+
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillRect(boxX, boxY, boxW, boxH);
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillText(name, textX, textY);
+  ctx.restore();
+}
+
+function renderFrame(ctx: CanvasRenderingContext2D, displayable: Displayable) {
+  const { source, layout, videoEle } = displayable;
+  ctx.drawImage(
+    videoEle,
+    source.x,
+    source.y,
+    source.w,
+    source.h,
+    layout.x,
+    layout.y,
+    layout.w,
+    layout.h,
+  );
+
+  // draw a black border around it.
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#000000';
+  ctx.strokeRect(layout.x, layout.y, layout.w, layout.h);
 }
 
 function roundRectMask(opts: {
