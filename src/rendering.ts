@@ -21,7 +21,7 @@ function renderMuteIndicator(
   displayable: Displayable,
 ) {
   const { showMuteIndicator } = opts;
-  const { muted, layout, source } = displayable;
+  const { muted, layout } = displayable;
 
   if (!showMuteIndicator || !muted) {
     return;
@@ -29,7 +29,7 @@ function renderMuteIndicator(
 
   ctx.save();
 
-  const { boxHeight, spacing, radius } = getDims();
+  const { boxHeight, spacing, radius } = getDims(layout.h);
 
   ctx.translate(layout.x, layout.y);
 
@@ -163,11 +163,21 @@ interface RenderingDimensions {
 }
 
 // fixme: args here to calculate it with
-function getDims(): RenderingDimensions {
-  return {
-    fontSize: 48,
-    spacing: 12,
-    radius: 12,
-    boxHeight: 60,
-  };
+function getDims(h: number): RenderingDimensions {
+  // console.log('get dims for h', h);
+  if (h <= 240) {
+    return {
+      fontSize: 18,
+      spacing: 4,
+      radius: 12,
+      boxHeight: 24,
+    };
+  } else {
+    return {
+      fontSize: 48,
+      spacing: 12,
+      radius: 4,
+      boxHeight: 60,
+    };
+  }
 }
