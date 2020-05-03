@@ -27,22 +27,14 @@ function renderMuteIndicator(
     return;
   }
 
-  ctx.save();
-
   const { boxHeight, spacing, radius } = getDims(layout.h);
 
+  ctx.save();
   ctx.translate(layout.x, layout.y);
 
   const x = spacing;
   const y = layout.h - boxHeight - spacing;
-  roundRectMask({
-    ctx: ctx,
-    x,
-    y,
-    w: boxHeight,
-    h: boxHeight,
-    radius,
-  });
+  roundRectMask({ ctx: ctx, x, y, w: boxHeight, h: boxHeight, radius });
   ctx.fillStyle = '#f26b4d';
   ctx.fillRect(x, y, boxHeight, boxHeight);
 
@@ -58,39 +50,32 @@ function renderGuestName(
     return;
   }
 
-  const { layout } = displayable;
-  const iconSize = 64;
-  const padding = 12;
+  const { layout, muted, name } = displayable;
+  const { showMuteIndicator } = opts;
+  const { boxHeight, spacing, radius, fontSize } = getDims(layout.h);
 
-  const fontSize = Math.floor(layout.h / 16);
+  ctx.save();
+  ctx.translate(layout.x, layout.y);
+
   ctx.font = `${fontSize}px sans-serif`;
   ctx.textBaseline = 'bottom';
 
-  const textX =
-    padding + (opts.showMuteIndicator ? iconSize : 0) + padding + padding;
-  const textY = layout.h - padding;
-  const textWidth = ctx.measureText(name).width + padding * 3;
+  const hasMuteIndicator = showMuteIndicator && muted;
 
-  const boxX = padding + (opts.showMuteIndicator ? iconSize : 0) + padding;
-  const boxY = layout.h - padding - iconSize;
-  // const boxY = layout.h - padding - fontSize;
-  const boxH = iconSize;
-  const boxW = textWidth;
+  const textWidth = ctx.measureText(name).width;
 
-  ctx.save();
-  roundRectMask({
-    ctx: ctx,
-    x: boxX,
-    y: boxY,
-    w: boxW,
-    h: boxH,
-    radius: 12,
-  });
+  const boxX = spacing + (hasMuteIndicator ? boxHeight + spacing : 0);
+  const boxW = textWidth + spacing * 2;
+  const boxH = boxHeight;
+  const boxY = layout.h - boxHeight - spacing;
+  const textX = boxX + spacing;
+  const textY = layout.h - spacing;
+
+  roundRectMask({ ctx: ctx, x: boxX, y: boxY, w: boxW, h: boxH, radius });
 
   ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
   ctx.fillRect(boxX, boxY, boxW, boxH);
-
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = '#ffffff';
   ctx.fillText(name, textX, textY);
   ctx.restore();
 }
@@ -162,22 +147,23 @@ interface RenderingDimensions {
   boxHeight: number;
 }
 
-// fixme: args here to calculate it with
 function getDims(h: number): RenderingDimensions {
+  // fixme: tune dims. Maybe add font positioning Or test the other baseline
+  // stuff?
   // console.log('get dims for h', h);
   if (h <= 240) {
     return {
       fontSize: 18,
       spacing: 4,
-      radius: 12,
+      radius: 4,
       boxHeight: 24,
     };
   } else {
     return {
-      fontSize: 48,
-      spacing: 12,
-      radius: 4,
-      boxHeight: 60,
+      fontSize: 42,
+      spacing: 6,
+      radius: 12,
+      boxHeight: 54,
     };
   }
 }
