@@ -1,17 +1,17 @@
 import { Options, Displayable } from './types';
 
 export function renderGuestFrame(
-  context: CanvasRenderingContext2D,
+  ctx: CanvasRenderingContext2D,
   opts: Options,
   displayables: readonly Displayable[],
   muteIcon: HTMLImageElement,
 ) {
-  context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   displayables.forEach((e) => {
     const { source, layout, muted, videoEle, name } = e;
 
-    context.drawImage(
+    ctx.drawImage(
       videoEle,
       source.x,
       source.y,
@@ -29,19 +29,19 @@ export function renderGuestFrame(
     if (opts.showMuteIndicator && muted) {
       const x = padding;
       const y = layout.h - iconSize - padding;
-      context.save();
+      ctx.save();
       roundRectMask({
-        ctx: context,
+        ctx: ctx,
         x,
         y,
         w: iconSize,
         h: iconSize,
         radius: 12,
       });
-      context.fillStyle = '#f26b4d';
-      context.fillRect(x, y, iconSize, iconSize);
-      context.drawImage(muteIcon, x + 4, y + 4, iconSize - 8, iconSize - 8);
-      context.restore();
+      ctx.fillStyle = '#f26b4d';
+      ctx.fillRect(x, y, iconSize, iconSize);
+      ctx.drawImage(muteIcon, x + 4, y + 4, iconSize - 8, iconSize - 8);
+      ctx.restore();
     }
 
     /**
@@ -52,13 +52,13 @@ export function renderGuestFrame(
 
     if (opts.showNames) {
       const fontSize = Math.floor(layout.h / 16);
-      context.font = `${fontSize}px sans-serif`;
-      context.textBaseline = 'bottom';
+      ctx.font = `${fontSize}px sans-serif`;
+      ctx.textBaseline = 'bottom';
 
       const textX =
         padding + (opts.showMuteIndicator ? iconSize : 0) + padding + padding;
       const textY = layout.h - padding;
-      const textWidth = context.measureText(name).width + padding * 3;
+      const textWidth = ctx.measureText(name).width + padding * 3;
 
       const boxX = padding + (opts.showMuteIndicator ? iconSize : 0) + padding;
       const boxY = layout.h - padding - iconSize;
@@ -66,9 +66,9 @@ export function renderGuestFrame(
       const boxH = iconSize;
       const boxW = textWidth;
 
-      context.save();
+      ctx.save();
       roundRectMask({
-        ctx: context,
+        ctx: ctx,
         x: boxX,
         y: boxY,
         w: boxW,
@@ -76,17 +76,17 @@ export function renderGuestFrame(
         radius: 12,
       });
 
-      context.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      context.fillRect(boxX, boxY, boxW, boxH);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(boxX, boxY, boxW, boxH);
 
-      context.fillStyle = '#FFFFFF';
-      context.fillText(name, textX, textY);
-      context.restore();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(name, textX, textY);
+      ctx.restore();
     }
 
-    context.lineWidth = 1;
-    context.strokeStyle = '#000000';
-    context.strokeRect(layout.x, layout.y, layout.w, layout.h);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#000000';
+    ctx.strokeRect(layout.x, layout.y, layout.w, layout.h);
   });
 }
 

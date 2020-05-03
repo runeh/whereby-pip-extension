@@ -107,8 +107,8 @@ function getDisplayables(opts: Options): readonly Displayable[] {
 async function initMedia(opts: Options): Promise<PiPMedia> {
   const { width, height } = opts.videoResolution;
   const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  assertIsDefined(context);
+  const ctx = canvas.getContext('2d');
+  assertIsDefined(ctx);
 
   const pipVideo = document.createElement('video');
   canvas.width = width;
@@ -121,12 +121,12 @@ async function initMedia(opts: Options): Promise<PiPMedia> {
   pipVideo.style.width = '0';
   pipVideo.style.height = '0';
 
-  context.fillStyle = '#000000';
+  ctx.fillStyle = '#000000';
   // Rendering something to the canvas makes sure the video gets
   // to the correct ready state
-  context.fillRect(0, 0, width, height);
+  ctx.fillRect(0, 0, width, height);
 
-  return { pipContext: context, pipVideo };
+  return { pipCtx: ctx, pipVideoEle: pipVideo };
 }
 
 function isBig(ele: HTMLElement): boolean {
@@ -146,7 +146,7 @@ function sleep(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-async function mainLoop(context: CanvasRenderingContext2D, opts: Options) {
+async function mainLoop(ctx: CanvasRenderingContext2D, opts: Options) {
   const frameDelay = Math.ceil(1000 / opts.frameRate);
   const muteIcon = await loadImage(muteIconDataUri);
 
@@ -160,7 +160,7 @@ async function mainLoop(context: CanvasRenderingContext2D, opts: Options) {
       displayableUpdateTs = now;
     }
 
-    renderGuestFrame(context, opts, displayables, muteIcon);
+    renderGuestFrame(ctx, opts, displayables, muteIcon);
     await sleep(frameDelay);
   }
 }
@@ -180,11 +180,11 @@ async function main() {
   if (document.pictureInPictureElement) {
     await document.exitPictureInPicture();
   } else {
-    const { pipContext, pipVideo } = await initMedia(opts);
+    const { pipCtx, pipVideoEle: pipVideo } = await initMedia(opts);
     await videoReady(pipVideo);
     document.body.appendChild(pipVideo);
     await pipVideo.requestPictureInPicture();
-    await mainLoop(pipContext, opts);
+    await mainLoop(pipCtx, opts);
     pipVideo.srcObject = null;
     pipVideo.remove();
   }

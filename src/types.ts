@@ -26,6 +26,6 @@ export interface Displayable {
 }
 
 export interface PiPMedia {
-  pipContext: CanvasRenderingContext2D;
-  pipVideo: HTMLVideoElement;
+  pipCtx: CanvasRenderingContext2D;
+  pipVideoEle: HTMLVideoElement;
 }
