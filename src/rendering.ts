@@ -6,10 +6,9 @@ export function renderGuestFrame(
   displayables: readonly Displayable[],
 ) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
   ctx.save();
   displayables.forEach((e) => {
-    renderFrame(ctx, e);
+    renderFrame(opts, ctx, e);
     renderMuteIndicator(opts, ctx, e);
     renderGuestName(opts, ctx, e);
   });
@@ -24,7 +23,7 @@ function renderMuteIndicator(
   const { showMuteIndicator } = opts;
   const { muted, layout } = displayable;
 
-  if (showMuteIndicator || !muted) {
+  if (!showMuteIndicator || !muted) {
     return;
   }
 
@@ -94,8 +93,21 @@ function renderGuestName(
   ctx.restore();
 }
 
-function renderFrame(ctx: CanvasRenderingContext2D, displayable: Displayable) {
-  const { source, layout, videoEle } = displayable;
+function renderFrame(
+  opts: Options,
+  ctx: CanvasRenderingContext2D,
+  displayable: Displayable,
+) {
+  const { flipSelf } = opts;
+  const { source, layout, videoEle, me } = displayable;
+  ctx.save();
+
+  // fixme: rename flip to mirror?
+  if (flipSelf && me) {
+    ctx.translate(ctx.canvas.width, 0);
+    ctx.scale(-1, 1);
+  }
+
   ctx.drawImage(
     videoEle,
     source.x,
@@ -112,6 +124,7 @@ function renderFrame(ctx: CanvasRenderingContext2D, displayable: Displayable) {
   ctx.lineWidth = 1;
   ctx.strokeStyle = '#000000';
   ctx.strokeRect(layout.x, layout.y, layout.w, layout.h);
+  ctx.restore();
 }
 
 function roundRectMask(opts: {
@@ -139,3 +152,5 @@ function roundRectMask(opts: {
   ctx.closePath();
   ctx.clip();
 }
+
+// function getDims(w: number, h) {}
