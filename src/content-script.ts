@@ -1,7 +1,6 @@
 import { getLayout, LayoutBox } from './layout';
 import { Displayable, Options, PiPMedia } from './types';
 import { loadOptions, getSourceCrop } from './util';
-import { mute as muteIconDataUri } from './icons';
 import { renderGuestFrame } from './rendering';
 
 // @ts-ignore
@@ -148,7 +147,6 @@ function sleep(ms: number) {
 
 async function mainLoop(ctx: CanvasRenderingContext2D, opts: Options) {
   const frameDelay = Math.ceil(1000 / opts.frameRate);
-  const muteIcon = await loadImage(muteIconDataUri);
 
   let displayableUpdateTs = 0;
   let displayables: readonly Displayable[] = [];
@@ -160,7 +158,7 @@ async function mainLoop(ctx: CanvasRenderingContext2D, opts: Options) {
       displayableUpdateTs = now;
     }
 
-    renderGuestFrame(ctx, opts, displayables, muteIcon);
+    renderGuestFrame(ctx, opts, displayables);
     await sleep(frameDelay);
   }
 }
