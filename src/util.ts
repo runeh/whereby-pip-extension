@@ -1,5 +1,4 @@
 import { Options } from './types';
-import { LayoutBox } from './layout';
 
 const defaultOptions: Options = {
   flipSelf: false,
@@ -82,4 +81,30 @@ export function getSourceCrop(source: Size, dest: Size): Crop {
       return { x, y, w, h };
     }
   }
+}
+
+export function roundRectMask(opts: {
+  ctx: CanvasRenderingContext2D;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  radius: number;
+}) {
+  const { ctx, h, w, x, y } = opts;
+  let radius = opts.radius;
+  if (w < 2 * radius) {
+    radius = w / 2;
+  }
+  if (h < 2 * radius) {
+    radius = h / 2;
+  }
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
+  ctx.closePath();
+  ctx.clip();
 }

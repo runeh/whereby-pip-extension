@@ -1,6 +1,6 @@
 import { getLayout, LayoutBox } from './layout';
 import { Displayable, Options, PiPMedia } from './types';
-import { loadOptions, getSourceCrop } from './util';
+import { loadOptions, getSourceCrop, roundRectMask } from './util';
 import { mute as muteIconDataUri } from './icons';
 
 // @ts-ignore
@@ -169,28 +169,59 @@ function renderFrame(
     if (opts.showMuteIndicator && muted) {
       const x = padding;
       const y = layout.h - iconSize - padding;
-      context.drawImage(muteIcon, x, y, iconSize, iconSize);
+      context.save();
+      roundRectMask({
+        ctx: context,
+        x,
+        y,
+        w: iconSize,
+        h: iconSize,
+        radius: 12,
+      });
+      context.fillStyle = '#f26b4d';
+      context.fillRect(x, y, iconSize, iconSize);
+      context.drawImage(muteIcon, x + 4, y + 4, iconSize - 8, iconSize - 8);
+      context.restore();
     }
+
+    /**
+     * Use translate on the canvas, so we don't need to care about
+     * the position on the canvas, just w/h ?
+     * Maybe mask it out, so frame can't overshoot?
+     */
 
     if (opts.showNames) {
       const fontSize = Math.floor(layout.h / 16);
       context.font = `${fontSize}px sans-serif`;
       context.textBaseline = 'bottom';
 
-      const textX = padding + (opts.showMuteIndicator ? iconSize : 0) + padding;
+      const textX =
+        padding + (opts.showMuteIndicator ? iconSize : 0) + padding + padding;
       const textY = layout.h - padding;
-      const textWidth = context.measureText(name).width;
+      const textWidth = context.measureText(name).width + padding * 3;
 
       const boxX = padding + (opts.showMuteIndicator ? iconSize : 0) + padding;
-      const boxY = layout.h - padding - fontSize;
-      const boxH = fontSize;
+      const boxY = layout.h - padding - iconSize;
+      // const boxY = layout.h - padding - fontSize;
+      const boxH = iconSize;
       const boxW = textWidth;
+
+      context.save();
+      roundRectMask({
+        ctx: context,
+        x: boxX,
+        y: boxY,
+        w: boxW,
+        h: boxH,
+        radius: 12,
+      });
 
       context.fillStyle = 'rgba(0, 0, 0, 0.7)';
       context.fillRect(boxX, boxY, boxW, boxH);
 
       context.fillStyle = '#FFFFFF';
       context.fillText(name, textX, textY);
+      context.restore();
     }
 
     context.lineWidth = 1;
